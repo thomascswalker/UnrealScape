@@ -8,35 +8,36 @@
 #include "Tile.generated.h"
 
 UCLASS()
-class RS_MOVEMENT_CPP_API ATile : public AActor {
-  GENERATED_BODY()
+class RS_MOVEMENT_CPP_API ATile : public AActor
+{
+    GENERATED_BODY()
 
 public:
-  UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
-  FVector2D gridPosition;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
+    FVector2D GridPosition;
 
-  UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
-  FVector worldPosition;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
+    FVector WorldPosition;
 
-  UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
-  int g = 0;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
+    int G = 0;
 
-  UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
-  int h = 0;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
+    int H = 0;
 
-  UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
-  bool walkable = false;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile Properties")
+    bool Walkable = false;
 
-  // Sets default values for this actor's properties
-  ATile();
+    // Sets default values for this actor's properties
+    ATile();
 
 protected:
-  // Called when the game starts or when spawned
-  virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
 public:
-  // Called every frame
-  virtual void Tick(float DeltaTime) override;
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
-  int getFCost();
+    int GetFCost();
 };

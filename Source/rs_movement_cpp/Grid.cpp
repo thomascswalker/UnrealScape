@@ -3,28 +3,41 @@
 #include "Grid.h"
 
 // Sets default values
-AGrid::AGrid(int _sizeX, int _sizeY) {
-  // Set this actor to call Tick() every frame.  You can turn this off to
-  // improve performance if you don't need it.
-  PrimaryActorTick.bCanEverTick = true;
+AGrid::AGrid(int _SizeX, int _SizeY)
+{
+    // Set this actor to call Tick() every frame.  You can turn this off to
+    // improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
-  sizeX = _sizeX;
-  sizeY = _sizeY;
+    SizeX = _SizeX;
+    SizeY = _SizeY;
 
-  for (int x = 0; x < sizeX; x++) {
-    for (int y = 0; y < sizeY; y++) {
-      ATile tile;
+    WorldSize.X = SizeX * TileSize;
+    WorldSize.Y = SizeY * TileSize;
 
-      tile.gridPosition.X = x;
-      tile.gridPosition.Y = y;
+    // Construct new tiles for the grid
+    for (int X = 0; X < SizeX; X++)
+    {
+        for (int Y = 0; Y < SizeY; Y++)
+        {
+            ATile* Tile = NewObject<ATile>(this);
 
-      tiles.Add(std::make_unique<ATile>(tile));
+            Tile->GridPosition.X = X;
+            Tile->GridPosition.Y = Y;
+
+            Tiles.Add(Tile);
+        }
     }
-  }
 }
 
 // Called when the game starts or when spawned
-void AGrid::BeginPlay() { Super::BeginPlay(); }
+void AGrid::BeginPlay()
+{
+    Super::BeginPlay();
+}
 
 // Called every frame
-void AGrid::Tick(float DeltaTime) { Super::Tick(DeltaTime); }
+void AGrid::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+}
