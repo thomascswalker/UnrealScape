@@ -11,8 +11,9 @@
  * 
  */
 USTRUCT(BlueprintType)
-struct RS_MOVEMENT_CPP_API FTileInfo
+struct FTileInfo
 {
+public:
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
@@ -22,7 +23,7 @@ struct RS_MOVEMENT_CPP_API FTileInfo
     ATile* Actor;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
-    FVector2D GridPosition;
+    FVector2D GridIndex;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
     FVector WorldPosition;
@@ -34,9 +35,10 @@ struct RS_MOVEMENT_CPP_API FTileInfo
     int H = 0;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
-    bool Walkable = false;
+    bool Walkable = true;
 
-    int GetF() { return G + H; }
+    int GetF() const { return G + H; }
+    bool Equals(const FTileInfo& Other) const { return Actor == Other.Actor; }
 
-	FORCEINLINE bool operator==(const FTileInfo& Other) const { return WorldPosition == Other.WorldPosition; }
+    bool operator==(const FTileInfo& Other) const { return Equals(Other); }
 };

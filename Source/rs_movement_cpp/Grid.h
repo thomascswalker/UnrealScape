@@ -51,4 +51,22 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void ConstructTileActors(const FVector CenteredLocation);
+
+    bool IsGridIndexValid(FVector2D Index);
+    bool IsGridIndexValid(int X, int Y);
+    FTileInfo& GetTileFromGridIndex(FVector2D Index);
+    FTileInfo& GetTileFromGridIndex(int X, int Y);
+
+    // Pathfinding functions
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<FTileInfo> GetNeighbors(const FTileInfo& Tile);
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    int GetDistance(const FTileInfo& A, const FTileInfo& B);
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<FTileInfo> Retrace(const FTileInfo& Start, const FTileInfo& End);
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    TArray<FTileInfo> RequestPath(const FTileInfo& Start, const FTileInfo& End);
 };
