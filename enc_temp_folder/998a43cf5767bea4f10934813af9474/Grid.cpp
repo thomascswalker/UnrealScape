@@ -40,27 +40,26 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
             SpawnTransform.SetLocation(SpawnLocation);
 
             // Construct the tile
-            AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(this, TileClass, SpawnTransform);
-            ATile* Tile = Cast<ATile>(Actor);
+            //AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(this, TileClass, SpawnTransform);
+            //ATile* Tile = Cast<ATile>(Actor);
             FTileInfo TileInfo;
 
             // If it's constructed successfully, set the grid and world positions
-            if (Tile)
-            {
-                TileInfo.Actor = Tile;
+            //if (Tile)
+            //{
+            //TileInfo.Actor = Tile;
 
-                TileInfo.GridPosition.X = X;
-                TileInfo.GridPosition.Y = Y;
+            TileInfo.GridPosition.X = X;
+            TileInfo.GridPosition.Y = Y;
 
-                TileInfo.WorldPosition.X = SpawnTransform.GetLocation().X;
-                TileInfo.WorldPosition.Y = SpawnTransform.GetLocation().Y;
-
-                Tiles.Add(TileInfo);
-            }
+            TileInfo.WorldPosition.X = SpawnTransform.GetLocation().X;
+            TileInfo.WorldPosition.Y = SpawnTransform.GetLocation().Y;
+            //}
 
             // Add to Tiles array and attach to this
-            Tile->FinishSpawning(SpawnTransform);
-            Tile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+            //Tile->FinishSpawning(SpawnTransform);
+            Tiles.Add(TileInfo);
+            //Tile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
         }
     }
 }

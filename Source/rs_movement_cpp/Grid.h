@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Algo/Reverse.h"
-#include "Components/ChildActorComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
 
 
 #include <vector>
 
-#include "Tile.h"
+#include "Public/TileInfo.h"
 
 #include "Grid.generated.h"
 
@@ -19,22 +20,22 @@ class RS_MOVEMENT_CPP_API AGrid : public AActor
 {
     GENERATED_BODY()
 
-
-
     FVector WorldOrigin;
     FVector2d WorldSize;
 
-public:
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Grid Properties")
-    TArray<ATile*> Tiles;
+    UClass* TileClass = ATile::StaticClass();
 
-    UPROPERTY(EditAnywhere, Category = "Grid Properties")
+public:
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Grid")
+    TArray<FTileInfo> Tiles;
+
+    UPROPERTY(EditAnywhere, Category = "Grid")
     int SizeX = 5;
 
-    UPROPERTY(EditAnywhere, Category = "Grid Properties")
+    UPROPERTY(EditAnywhere, Category = "Grid")
     int SizeY = 5;
 
-    UPROPERTY(EditAnywhere, Category = "Grid Properties")
+    UPROPERTY(EditAnywhere, Category = "Grid")
     float TileSize = 50.0;
 
     // Sets default values for this actor's properties
@@ -47,5 +48,7 @@ protected:
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
-    void OnConstruction(const FTransform& Transform) override;
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    void ConstructTileActors(const FVector CenteredLocation);
 };
