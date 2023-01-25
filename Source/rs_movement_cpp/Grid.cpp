@@ -150,15 +150,15 @@ int AGrid::GetDistance(const FTileInfo& A, const FTileInfo& B)
 TArray<FTileInfo> AGrid::Retrace(const FTileInfo& Start, const FTileInfo& End)
 {
     TArray<FTileInfo> Path;
-    //FTileInfo CurrentTile = End;
+    FTileInfo CurrentTile = End;
 
-    //while (CurrentTile.GridIndex != Start.GridIndex)
-    //{
-    //    Path.Add(CurrentTile);
-    //    CurrentTile = GetTileFromGridIndex(CurrentTile.Parent);
-    //}
+    while (CurrentTile != Start)
+    {
+        Path.Add(CurrentTile);
+        CurrentTile = GetTileFromGridIndex(CurrentTile.Parent);
+    }
 
-    //Algo::Reverse(Path);
+    Algo::Reverse(Path);
 
     return Path;
 }

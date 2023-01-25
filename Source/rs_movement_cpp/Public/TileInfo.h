@@ -37,8 +37,10 @@ public:
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
     bool Walkable = true;
 
+
     int GetF() const { return G + H; }
     bool Equals(const FTileInfo& Other) const { return Actor == Other.Actor; }
 
     bool operator==(const FTileInfo& Other) const { return Equals(Other); }
+    bool operator!=(const FTileInfo& Other) const { return !Equals(Other); }
 };
