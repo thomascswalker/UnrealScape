@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Algo/Reverse.h"
+#include "Components/ChildActorComponent.h"
 #include "GameFramework/Actor.h"
+
 
 #include <vector>
 
@@ -16,24 +19,26 @@ class RS_MOVEMENT_CPP_API AGrid : public AActor
 {
     GENERATED_BODY()
 
-    TArray<ATile*> Tiles;
+
 
     FVector WorldOrigin;
     FVector2d WorldSize;
 
 public:
-    UPROPERTY(EditAnywhere, Category = "Grid Properties")
-    int SizeX = 0;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Grid Properties")
+    TArray<ATile*> Tiles;
 
     UPROPERTY(EditAnywhere, Category = "Grid Properties")
-    int SizeY = 0;
+    int SizeX = 5;
+
+    UPROPERTY(EditAnywhere, Category = "Grid Properties")
+    int SizeY = 5;
 
     UPROPERTY(EditAnywhere, Category = "Grid Properties")
     float TileSize = 50.0;
 
     // Sets default values for this actor's properties
-    AGrid() = default;
-    AGrid(int _SizeX, int _SizeY);
+    AGrid();
 
 protected:
     // Called when the game starts or when spawned
@@ -42,4 +47,5 @@ protected:
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
+    void OnConstruction(const FTransform& Transform) override;
 };
