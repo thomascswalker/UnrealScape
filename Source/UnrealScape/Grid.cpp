@@ -92,6 +92,21 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
     return GetTileIndexFromGridIndex(FVector2D(X, Y));
 }
 
+FTileInfo& AGrid::GetTileInfoFromTileActor(const ATile* Tile)
+{
+    int Index = 0;
+    for (FTileInfo& Info : Tiles)
+    {
+        if (Info.Actor == Tile)
+        {
+            Index = GetTileIndexFromGridIndex(Info.GridIndex);
+        }
+    }
+
+    check(Index < Tiles.Num());
+    return Tiles[Index];
+}
+
 void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
 {
     for (int Y = -1; Y <= 1; Y++)

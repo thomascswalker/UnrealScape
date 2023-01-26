@@ -57,6 +57,9 @@ public:
     int GetTileIndexFromGridIndex(FVector2D Index);
     int GetTileIndexFromGridIndex(int X, int Y);
 
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    FTileInfo& GetTileInfoFromTileActor(const ATile* Tile);
+
     // Pathfinding functions
     void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
