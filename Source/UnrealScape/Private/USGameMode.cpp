@@ -3,3 +3,8 @@
 
 #include "USGameMode.h"
 
+AUSGameMode::AUSGameMode() {
+    PlayerControllerClass = AUSPlayerController::StaticClass();
+}
+
+
