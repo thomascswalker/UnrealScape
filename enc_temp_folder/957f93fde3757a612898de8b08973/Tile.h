@@ -3,13 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/EngineTypes.h"
+#include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
-#include "GameFramework/Actor.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Math/Vector.h"
 #include "Tile.generated.h"
 
@@ -32,8 +30,5 @@ protected:
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
-
-    bool IsWalkable();
-
     void SetText(FText& Text);
 };

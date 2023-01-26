@@ -117,7 +117,7 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
             // Get the possible neighbor, and determine if it's walkable
             int Index = GetTileIndexFromGridIndex(CX, CY);
             FTileInfo PossibleNeighbor = Tiles[Index];
-            if (!PossibleNeighbor.Actor->IsWalkable())
+            if (!PossibleNeighbor.Walkable)
             {
                 continue;
             }
@@ -216,7 +216,6 @@ TArray<FTileInfo> AGrid::RequestPath(const FTileInfo& Start, const FTileInfo& En
 
             // Calculate distance from current to neighbor
             int Distance = GetDistance(CurrentTile, Neighbor);
-
             // Calculate the new cost of the neighbor
             int NewCost = CurrentTile.G + Distance;
 

@@ -44,17 +44,7 @@ void ATile::Tick(float DeltaTime)
 
 bool ATile::IsWalkable()
 {
-    FVector Start = GetActorLocation();
-    FVector End = Start + FVector(0, 0, 25);
-
-    TArray<AActor*> ActorsToIgnore;
-    ActorsToIgnore.Add(GetOwner());
-    FHitResult HitArray;
-    const bool Hit = UKismetSystemLibrary::SphereTraceSingle(
-        this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(ECC_WorldStatic), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitArray, true, FLinearColor::Red, FLinearColor::Green, 60.f);
-
-    return !Hit;
+    return false;
 }
 
 void ATile::SetText(FText& Text)

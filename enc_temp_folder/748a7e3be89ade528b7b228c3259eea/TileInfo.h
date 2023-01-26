@@ -34,6 +34,9 @@ public:
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
     int H = 0;
 
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
+    bool Walkable = true;
+
 
     int GetF() const { return G + H; }
     bool Equals(const FTileInfo& Other) const { return Actor == Other.Actor; }
