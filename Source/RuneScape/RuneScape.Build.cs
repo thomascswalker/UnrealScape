@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class rs_movement_cpp : ModuleRules
+public class RuneScape : ModuleRules
 {
-	public rs_movement_cpp(ReadOnlyTargetRules Target) : base(Target)
+	public RuneScape(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	

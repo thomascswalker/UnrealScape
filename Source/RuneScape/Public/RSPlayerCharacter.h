@@ -7,7 +7,7 @@
 #include "RSPlayerCharacter.generated.h"
 
 UCLASS()
-class RS_MOVEMENT_CPP_API ARSPlayerCharacter : public ACharacter
+class RUNESCAPE_API ARSPlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 

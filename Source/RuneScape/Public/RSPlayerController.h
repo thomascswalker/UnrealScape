@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class RS_MOVEMENT_CPP_API ARSPlayerController : public APlayerController
+class RUNESCAPE_API ARSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	

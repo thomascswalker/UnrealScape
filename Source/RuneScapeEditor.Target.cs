@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class rs_movement_cppEditorTarget : TargetRules
+public class RuneScapeEditorTarget : TargetRules
 {
-	public rs_movement_cppEditorTarget( TargetInfo Target) : base(Target)
+	public RuneScapeEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("rs_movement_cpp");
+		ExtraModuleNames.Add("RuneScape");
 	}
 }

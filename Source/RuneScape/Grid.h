@@ -16,7 +16,7 @@
 #include "Grid.generated.h"
 
 UCLASS()
-class RS_MOVEMENT_CPP_API AGrid : public AActor
+class RUNESCAPE_API AGrid : public AActor
 {
     GENERATED_BODY()
 
