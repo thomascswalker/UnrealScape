@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class RuneScape : ModuleRules
+public class UnrealScape : ModuleRules
 {
-	public RuneScape(ReadOnlyTargetRules Target) : base(Target)
+	public UnrealScape(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	

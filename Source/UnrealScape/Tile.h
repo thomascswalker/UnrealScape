@@ -14,7 +14,7 @@
 #include "Tile.generated.h"
 
 UCLASS()
-class RUNESCAPE_API ATile : public AActor
+class UNREALSCAPE_API ATile : public AActor
 {
     GENERATED_BODY()
 

@@ -1,16 +1,17 @@
+
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerController.h"
-#include "RSPlayerController.generated.h"
+#include "GameFramework/GameModeBase.h"
+#include "USGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RUNESCAPE_API ARSPlayerController : public APlayerController
+class UNREALSCAPE_API AUSGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
