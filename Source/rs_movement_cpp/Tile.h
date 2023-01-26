@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Math/Vector.h"
 #include "Tile.generated.h"
 
@@ -22,7 +24,11 @@ protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
+    UStaticMeshComponent* StaticMeshComponent;
+    UTextRenderComponent* TextRenderComponent;
+
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
+    void SetText(FText& Text);
 };

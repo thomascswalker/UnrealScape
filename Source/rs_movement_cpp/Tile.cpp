@@ -8,17 +8,26 @@ ATile::ATile()
     // improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
+    USceneComponent* SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+    RootComponent = SceneComponent;
+
     // Construct the static mesh component
-    UStaticMeshComponent* StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RootComponent"));
+    StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TileMesh"));
     auto Mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
     if (Mesh.Object)
     {
         StaticMeshComponent->SetStaticMesh(Mesh.Object);
-        StaticMeshComponent->SetRelativeScale3D(FVector(.5f, .5f, .1));
+        StaticMeshComponent->SetRelativeScale3D(FVector(.45f, .45f, .1));
     }
+    StaticMeshComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
-    // Set this component as the root component
-    RootComponent = StaticMeshComponent;
+    // Text render
+    TextRenderComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TileText"));
+    TextRenderComponent->SetHorizontalAlignment(EHTA_Center);
+    TextRenderComponent->SetWorldSize(10.f);
+    TextRenderComponent->AddLocalTransform(FTransform(FVector(0.f, 0.f, 10.f)));
+    TextRenderComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.f, 90.f, 90.f)));
+    TextRenderComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 // Called when the game starts or when spawned
@@ -31,4 +40,9 @@ void ATile::BeginPlay()
 void ATile::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+}
+
+void ATile::SetText(FText& Text)
+{
+    TextRenderComponent->SetText(Text);
 }

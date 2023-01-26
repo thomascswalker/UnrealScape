@@ -29,10 +29,10 @@ public:
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Grid")
     TArray<FTileInfo> Tiles;
 
-    UPROPERTY(EditAnywhere, Category = "Grid")
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid")
     int SizeX = 5;
 
-    UPROPERTY(EditAnywhere, Category = "Grid")
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid")
     int SizeY = 5;
 
     UPROPERTY(EditAnywhere, Category = "Grid")
@@ -54,18 +54,13 @@ public:
 
     bool IsGridIndexValid(FVector2D Index);
     bool IsGridIndexValid(int X, int Y);
-    FTileInfo& GetTileFromGridIndex(FVector2D Index);
-    FTileInfo& GetTileFromGridIndex(int X, int Y);
+    int GetTileIndexFromGridIndex(FVector2D Index);
+    int GetTileIndexFromGridIndex(int X, int Y);
 
     // Pathfinding functions
-    UFUNCTION(BlueprintCallable, Category = "Grid")
-    TArray<FTileInfo> GetNeighbors(const FTileInfo& Tile);
-
-    UFUNCTION(BlueprintCallable, Category = "Grid")
+    void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
-
-    UFUNCTION(BlueprintCallable, Category = "Grid")
-    TArray<FTileInfo> Retrace(const FTileInfo& Start, const FTileInfo& End);
+    TArray<FTileInfo> Retrace(FTileInfo& Start, FTileInfo& End);
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
     TArray<FTileInfo> RequestPath(const FTileInfo& Start, const FTileInfo& End);
