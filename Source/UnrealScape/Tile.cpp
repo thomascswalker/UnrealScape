@@ -49,12 +49,12 @@ bool ATile::IsWalkable()
 
     TArray<AActor*> ActorsToIgnore;
     ActorsToIgnore.Add(GetOwner());
-    FHitResult HitArray;
-    const bool Hit = UKismetSystemLibrary::SphereTraceSingle(
+    FHitResult HitResult;
+    const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
         this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(ECC_WorldStatic), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitArray, true, FLinearColor::Red, FLinearColor::Green, 60.f);
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 60.f);
 
-    return !Hit;
+    return !BlockingHit;
 }
 
 void ATile::SetText(FText& Text)
