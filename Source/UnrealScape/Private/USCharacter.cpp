@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RSPlayerCharacter.h"
+#include "USCharacter.h"
 
 // Sets default values
-ARSPlayerCharacter::ARSPlayerCharacter()
+AUSCharacter::AUSCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,21 +12,21 @@ ARSPlayerCharacter::ARSPlayerCharacter()
 }
 
 // Called when the game starts or when spawned
-void ARSPlayerCharacter::BeginPlay()
+void AUSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void ARSPlayerCharacter::Tick(float DeltaTime)
+void AUSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
 // Called to bind functionality to input
-void ARSPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AUSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 

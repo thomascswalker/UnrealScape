@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "RSPlayerCharacter.generated.h"
+#include "USCharacter.generated.h"
 
 UCLASS()
-class RUNESCAPE_API ARSPlayerCharacter : public ACharacter
+class UNREALSCAPE_API AUSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	ARSPlayerCharacter();
+	AUSCharacter();
 
 protected:
 	// Called when the game starts or when spawned

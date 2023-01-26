@@ -16,7 +16,7 @@
 #include "Grid.generated.h"
 
 UCLASS()
-class RUNESCAPE_API AGrid : public AActor
+class UNREALSCAPE_API AGrid : public AActor
 {
     GENERATED_BODY()
 
