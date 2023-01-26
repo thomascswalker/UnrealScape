@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class RS_MOVEMENT_CPP_API ARSGameMode : public AGameModeBase
+class RUNESCAPE_API ARSGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
