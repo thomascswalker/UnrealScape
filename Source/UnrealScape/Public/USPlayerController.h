@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include "../Grid.h"
+#include "../Tile.h"
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "../Tile.h"
+
 #include "USPlayerController.generated.h"
 
 /**
@@ -27,10 +29,7 @@ public:
     void OnLeftClick();
     bool LineTraceUnderMouseCursor(FHitResult& HitResult);
 
-
-    // Attributes
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Pathfinding")
-    ATile* CurrentTile;
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Pathfinding")
-    ATile* TargetTile;
+    AGrid* GetCurrentGrid();
+    FTileInfo& GetCurrentTile();
+    FTileInfo& GetTileUnderCursor();
 };

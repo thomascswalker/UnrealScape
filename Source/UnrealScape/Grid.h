@@ -58,6 +58,10 @@ public:
     int GetTileIndexFromGridIndex(int X, int Y);
 
     UFUNCTION(BlueprintCallable, Category = "Grid")
+    FTileInfo& GetTileInfoFromLocation(const FVector Location);
+
+
+    UFUNCTION(BlueprintCallable, Category = "Grid")
     FTileInfo& GetTileInfoFromTileActor(const ATile* Tile);
 
     // Pathfinding functions

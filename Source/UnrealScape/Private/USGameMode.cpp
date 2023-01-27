@@ -5,4 +5,5 @@
 AUSGameMode::AUSGameMode()
 {
     PlayerControllerClass = AUSPlayerController::StaticClass();
+    DefaultPawnClass = AUSCharacter::StaticClass();
 }
