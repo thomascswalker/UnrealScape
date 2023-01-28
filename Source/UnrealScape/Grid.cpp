@@ -35,15 +35,6 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
         return;
     }
 
-    //float XOffset = (SizeX * TileSize) / 2.f - (TileSize / 2.f);
-    //float YOffset = (SizeY * TileSize) / 2.f - (TileSize / 2.f);
-
-    //if (GEngine)
-    //{
-    //    FString Message = FString::Printf(L"XOffset: %f, YOffset: %f", XOffset, YOffset);
-    //    GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
-    //}
-
     for (int Y = 0; Y < SizeY; Y++)
     {
         for (int X = 0; X < SizeX; X++)
@@ -68,8 +59,8 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
                 TileInfo.GridIndex.X = X;
                 TileInfo.GridIndex.Y = Y;
 
-                TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f);
-                TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f);
+                TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f) + GetActorLocation().X;
+                TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + GetActorLocation().Y;
 
                 Tiles.Add(TileInfo);
                 FText Text = FText::FromString(FString::Printf(L"[%i, %i]", X, Y));
@@ -111,8 +102,9 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
 FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
 {
     // Get percentage of the full world size in X/Y
-    float PX = Location.X / (SizeX * TileSize);
-    float PY = Location.Y / (SizeY * TileSize);
+    FVector ActorLocation = GetActorLocation();
+    float PX = (Location.X - ActorLocation.X) / (SizeX * TileSize);
+    float PY = (Location.Y - ActorLocation.Y) / (SizeY * TileSize);
     PX = std::clamp(PX, 0.f, 1.f);
     PY = std::clamp(PY, 0.f, 1.f);
 
