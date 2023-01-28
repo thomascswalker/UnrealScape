@@ -4,6 +4,8 @@
 
 #include "../Grid.h"
 #include "../Tile.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -18,6 +20,16 @@ class UNREALSCAPE_API AUSPlayerController : public APlayerController
 {
     GENERATED_BODY()
 
+    float MovementSpeed = 1.f;
+    USplineComponent* Spline;
+    float GoalThreshold = 100.f;
+    FVector Goal;
+    FVector NextPoint;
+    float Length;
+    float CurrentTime = 0.f;
+    float DistanceThreshold = 50.f;
+    float DistanceBetweenPoints = 100.f;
+
 public:
     AUSPlayerController();
 
@@ -26,7 +38,7 @@ public:
     virtual void SetupInputComponent() override;
 
     // Methods
-    void OnLeftClick();
+    void Navigate();
     bool LineTraceUnderMouseCursor(FHitResult& HitResult);
 
     AGrid* GetCurrentGrid();

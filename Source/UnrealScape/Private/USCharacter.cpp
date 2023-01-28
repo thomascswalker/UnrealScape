@@ -7,15 +7,7 @@ AUSCharacter::AUSCharacter()
 {
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
-    StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere"));
-    auto SphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
-    if (SphereMesh.Object)
-    {
-        StaticMeshComponent->SetStaticMesh(SphereMesh.Object);
-        StaticMeshComponent->SetRelativeScale3D(FVector(.25f, .25f, .25f));
-    }
-    StaticMeshComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+    GetCharacterMovement()->GravityScale = 0.f;
 
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     SpringArmComponent->TargetArmLength = 300.f;

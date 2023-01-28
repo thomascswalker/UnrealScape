@@ -6,91 +6,111 @@ AUSPlayerController::AUSPlayerController()
 {
     bShowMouseCursor = true;
     bAttachToPawn = true;
+
+    Spline = CreateDefaultSubobject<USplineComponent>(TEXT("MovementSpline"));
+    Spline->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+    Spline->ClearSplinePoints();
+    Spline->bDrawDebug = true;
 }
 
 void AUSPlayerController::Tick(float DeltaTime)
 {
-    //FHitResult HitResult;
-    //if (LineTraceUnderMouseCursor(HitResult))
-    //{
-    //    AActor* Actor = HitResult.GetActor();
-    //    ATile* Tile = Cast<ATile>(Actor);
-    //    if (!Tile)
-    //    {
-    //        TargetTile = nullptr;
-    //    }
-    //    else if (Tile != TargetTile)
-    //    {
-    //        TargetTile = Tile;
+    if (Spline->GetNumberOfSplinePoints() == 0)
+    {
+        return;
+    }
 
-    //        if (GEngine)
-    //        {
-    //            FString Message = FString::Printf(L"%s", *Tile->GetName());
-    //            GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
-    //        }
-    //    }
-    //}
+    // Get current player location
+    APawn* ControlledPawn = GetPawn();
+    const FVector PlayerLocation = ControlledPawn->GetActorLocation();
+
+    // Get distance to end
+    float DistanceToGoal = (Goal - PlayerLocation).Size2D();
+
+    // If we're within the goal threshold, clear all points
+    if (DistanceToGoal <= GoalThreshold)
+    {
+        Spline->ClearSplinePoints();
+        return;
+    }
+
+    const float DistanceToNextPoint = (NextPoint - PlayerLocation).Size2D();
+    if (DistanceToNextPoint <= DistanceThreshold)
+    {
+        CurrentTime += DistanceBetweenPoints;
+        NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
+    }
+
+    // Move towards mouse pointer or touch
+    if (ControlledPawn != nullptr)
+    {
+        FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
+        ControlledPawn->AddMovementInput(WorldDirection, 1.0, false);
+    }
 }
 
 void AUSPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
-    InputComponent->BindAction("LeftClick", IE_Pressed, this, &AUSPlayerController::OnLeftClick);
+    InputComponent->BindAction("LeftClick", IE_Pressed, this, &AUSPlayerController::Navigate);
 }
 
-void AUSPlayerController::OnLeftClick()
+void AUSPlayerController::Navigate()
 {
+    Spline->ClearSplinePoints();
     FHitResult HitResult;
-    if (LineTraceUnderMouseCursor(HitResult))
+    if (!LineTraceUnderMouseCursor(HitResult))
+    {
+        return;
+    }
+
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, TEXT("Clicked!"));
+    }
+
+    // Get the target tile
+    AGrid* Grid = GetCurrentGrid();
+
+    // Get the current tile
+    FTileInfo CurrentTile = GetCurrentTile();
+    FTileInfo TargetTile = GetTileUnderCursor();
+
+    if (GEngine)
+    {
+        FString Message = FString::Printf(L"Current: %s\nTarget: %s", *CurrentTile.GridIndex.ToString(),
+                                          *TargetTile.GridIndex.ToString());
+        GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
+    }
+
+    // Request Path
+    TArray<FTileInfo> Path = Grid->RequestPath(CurrentTile, TargetTile);
+    if (Path.Num() == 0)
     {
         if (GEngine)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, TEXT("Clicked!"));
-        }
-
-        // Get the target tile
-        AGrid* Grid = GetCurrentGrid();
-
-        // Get the current tile
-        FTileInfo CurrentTile = GetCurrentTile();
-        FTileInfo TargetTile = GetTileUnderCursor();
-
-        if (GEngine)
-        {
-            FString Message = FString::Printf(L"Current: %s\nTarget: %s", *CurrentTile.GridIndex.ToString(),
-                                              *TargetTile.GridIndex.ToString());
+            FString Message = FString::Printf(L"Path not found.");
             GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
         }
-
-        // Request Path
-        TArray<FTileInfo> Path = Grid->RequestPath(CurrentTile, TargetTile);
-        if (Path.Num() == 0)
-        {
-            if (GEngine)
-            {
-                FString Message = FString::Printf(L"Path not found.");
-                GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
-            }
-            return;
-        }
-
-        FVector PlayerLocation = K2_GetActorLocation();
-        for (FTileInfo& NextTile : Path)
-        {
-            //int Count = 0;
-            //while (CurrentTile != NextTile)
-            //{
-            //    FVector Direction = NextTile.WorldPosition - CurrentTile.WorldPosition;
-            //    Direction.Normalize();
-            //    GetPawn()->AddMovementInput(Direction, 1.f, false);
-            //    if (Count > 10)
-            //    {
-            //        break;
-            //    }
-            //}
-            //CurrentTile = NextTile;
-        }
+        return;
     }
+
+    // Convert path points to spline points
+    for (FTileInfo& Tile : Path)
+    {
+        Spline->AddSplineWorldPoint(Tile.WorldPosition);
+        if (GEngine)
+        {
+            int Count = Spline->GetNumberOfSplinePoints();
+            FString Message = FString::Printf(L"Spline Points: %i", Count);
+            GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
+        }
+        Goal = Tile.WorldPosition;
+    }
+    Length = Spline->GetSplineLength();
+    Spline->Duration = Length;
+    CurrentTime = 0.f;
+    NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
 }
 
 bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult)
@@ -121,9 +141,6 @@ AGrid* AUSPlayerController::GetCurrentGrid()
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGrid::StaticClass(), Actors);
     for (auto Actor : Actors)
     {
-        FVector Origin;
-        FVector Extent;
-        Actor->GetActorBounds(false, Origin, Extent);
         AGrid* Grid = Cast<AGrid>(Actor);
         return Grid;
     }
@@ -134,7 +151,14 @@ AGrid* AUSPlayerController::GetCurrentGrid()
 
 FTileInfo& AUSPlayerController::GetCurrentTile()
 {
-    FVector PlayerLocation = K2_GetActorLocation();
+    // Get the current grid
+    AGrid* Grid = GetCurrentGrid();
+
+    // Get current player location
+    APawn* ControlledPawn = GetPawn();
+    FVector PlayerLocation = ControlledPawn->GetActorLocation();
+
+    // Trace location
     TArray<AActor*> ActorsToIgnore;
     ActorsToIgnore.Add(this);
     FHitResult HitResult;
@@ -143,21 +167,24 @@ FTileInfo& AUSPlayerController::GetCurrentTile()
         UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true,
         FLinearColor::Red, FLinearColor::Green, 1.f);
 
+    // If we hit any tiles, get the tile index
     ATile* Tile = Cast<ATile>(HitResult.GetActor());
-    AGrid* Grid = GetCurrentGrid();
-    FTileInfo CurrentTile = Grid->GetTileInfoFromTileActor(Tile);
-    int Index = Grid->GetTileIndexFromGridIndex(CurrentTile.GridIndex);
-    return Grid->Tiles[Index];
+    return Grid->GetTileInfoFromTileActor(Tile);
 }
 
 FTileInfo& AUSPlayerController::GetTileUnderCursor()
 {
+    // Get the current grid
     AGrid* Grid = GetCurrentGrid();
+
+    // Trace under cursor
     FHitResult HitResult;
     LineTraceUnderMouseCursor(HitResult);
+
+    // Do we hit a tile?
     AActor* Actor = HitResult.GetActor();
     ATile* Tile = Cast<ATile>(Actor);
-    FTileInfo TargetTile = Grid->GetTileInfoFromTileActor(Tile);
-    int Index = Grid->GetTileIndexFromGridIndex(TargetTile.GridIndex);
-    return Grid->Tiles[Index];
+
+    // Get the respective tile info
+    return Grid->GetTileInfoFromTileActor(Tile);
 }
