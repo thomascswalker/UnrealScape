@@ -92,6 +92,23 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
     return GetTileIndexFromGridIndex(FVector2D(X, Y));
 }
 
+FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
+{
+    FVector ActualLocation = K2_GetActorLocation() + Location;
+
+    float PX = (ActualLocation.X + (WorldSize.X / 2.f)) / (float) WorldSize.X;
+    float PY = (ActualLocation.Y + (WorldSize.Y / 2.f)) / (float) WorldSize.Y;
+
+    PX = std::clamp(PX, 0.f, 1.f);
+    PY = std::clamp(PY, 0.f, 1.f);
+
+    int X = (SizeX - 1) * PX;
+    int Y = (SizeY - 1) * PX;
+
+    int Index = GetTileIndexFromGridIndex(X, Y);
+    return Tiles[Index];
+}
+
 FTileInfo& AGrid::GetTileInfoFromTileActor(const ATile* Tile)
 {
     int Index = 0;

@@ -5,7 +5,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "USCharacter.h"
 #include "USPlayerController.h"
+
 #include "USGameMode.generated.h"
 
 /**
@@ -14,8 +16,7 @@
 UCLASS()
 class UNREALSCAPE_API AUSGameMode : public AGameModeBase
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	AUSGameMode();
-	
+    AUSGameMode();
 };
