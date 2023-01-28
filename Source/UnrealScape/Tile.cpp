@@ -19,7 +19,6 @@ ATile::ATile()
     {
         StaticMeshComponent->SetStaticMesh(Mesh.Object);
         StaticMeshComponent->SetRelativeScale3D(FVector(.95f, .95f, .1));
-        //StaticMeshComponent->AddLocalTransform(FTransform(FVector(50.f, 50.f, 0.f)));
     }
     StaticMeshComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 

@@ -48,9 +48,8 @@ void UNavigatorComponent::UpdateCurrentTile()
     ActorsToIgnore.Add(ControlledPawn);
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
-        this, PawnLocation, PawnLocation, 25.f,
-        UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResult, true,
-        FLinearColor::Red, FLinearColor::Green, 5.f);
+        this, PawnLocation, PawnLocation, 25.f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+        EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 5.f);
 
     // If we hit any tiles, get the tile index
     ATile* Tile = Cast<ATile>(HitResult.GetActor());
@@ -60,19 +59,17 @@ void UNavigatorComponent::UpdateCurrentTile()
     }
 }
 
-void UNavigatorComponent::Navigate(const FVector& Location)
+void UNavigatorComponent::Navigate(const FTileInfo& TargetTile)
 {
     Spline->ClearSplinePoints();
 
     UpdateCurrentGrid();
     UpdateCurrentTile();
-    FTileInfo TargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
 
     if (GEngine)
     {
-        FString Message = FString::Printf(L"Current: %s\nTarget: %s", *CurrentTile.GridIndex.ToString(),
-                                          *TargetTile.GridIndex.ToString());
-        GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
+        FString Message = FString::Printf(L"Target: %s", *TargetTile.GridIndex.ToString());
+        GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Yellow, Message);
     }
 
     // Request Path
@@ -97,6 +94,7 @@ void UNavigatorComponent::Navigate(const FVector& Location)
             FString Message = FString::Printf(L"Spline Points: %i", Count);
             GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
         }
+
         DrawDebugSphere(GetWorld(), Tile.WorldPosition, 50.f, 12, FColor::Green, true);
         Goal = Tile.WorldPosition;
     }
@@ -138,14 +136,18 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     const float DistanceToNextPoint = (NextPoint - PlayerLocation).Size2D();
     if (DistanceToNextPoint <= DistanceThreshold)
     {
-        CurrentTime += DistanceBetweenPoints;
+        CurrentTime += DistanceToNextPoint;
         NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
     }
 
-    // Move towards mouse pointer or touch
     if (ControlledPawn != nullptr)
     {
+        if (GEngine)
+        {
+            FString Message = FString::Printf(L"Current Point: %f", CurrentTime);
+            GEngine->AddOnScreenDebugMessage(32, 1.f, FColor::Yellow, Message);
+        }
         FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
-        ControlledPawn->AddMovementInput(WorldDirection, 1.0, false);
+        ControlledPawn->AddMovementInput(WorldDirection, 1.0, true);
     }
 }

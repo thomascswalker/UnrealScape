@@ -17,13 +17,13 @@ class UNREALSCAPE_API UNavigatorComponent : public UActorComponent
     GENERATED_BODY()
     float MovementSpeed = 1.f;
     USplineComponent* Spline;
-    float GoalThreshold = 100.f;
+    float GoalThreshold = 50.f;
     FVector Goal;
     FVector NextPoint;
     float Length;
     float CurrentTime = 0.f;
     float DistanceThreshold = 50.f;
-    float DistanceBetweenPoints = 100.f;
+    float DistanceBetweenPoints = 50.f;
 
 public:
     // Sets default values for this component's properties
@@ -47,7 +47,7 @@ public:
     void UpdateCurrentTile();
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    void Navigate(const FVector& Location);
+    void Navigate(const FTileInfo& TargetTile);
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,
