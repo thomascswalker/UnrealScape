@@ -10,12 +10,15 @@ AUSCharacter::AUSCharacter()
     GetCharacterMovement()->GravityScale = 0.f;
 
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-    SpringArmComponent->TargetArmLength = 300.f;
+    SpringArmComponent->TargetArmLength = 1200.f;
     SpringArmComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.f, -45.f, 0.f)));
     SpringArmComponent->SetupAttachment(RootComponent);
 
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(SpringArmComponent);
+
+    NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("Navigator"));
+    AddOwnedComponent(NavigatorComponent);
 
     bUseControllerRotationPitch = false;
     bUseControllerRotationYaw = false;

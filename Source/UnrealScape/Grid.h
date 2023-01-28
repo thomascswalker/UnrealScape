@@ -26,16 +26,16 @@ class UNREALSCAPE_API AGrid : public AActor
     UClass* TileClass = ATile::StaticClass();
 
 public:
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Grid")
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Navigation")
     TArray<FTileInfo> Tiles;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid")
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     int SizeX = 5;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid")
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     int SizeY = 5;
 
-    UPROPERTY(EditAnywhere, Category = "Grid")
+    UPROPERTY(EditAnywhere, Category = "Navigation")
     float TileSize = 50.0;
 
     // Sets default values for this actor's properties
@@ -47,9 +47,10 @@ protected:
 
 public:
     // Called every frame
+    virtual void OnConstruction(const FTransform& Transform) override;
     virtual void Tick(float DeltaTime) override;
 
-    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
     void ConstructTileActors(const FVector CenteredLocation);
 
     bool IsGridIndexValid(FVector2D Index);
@@ -57,11 +58,11 @@ public:
     int GetTileIndexFromGridIndex(FVector2D Index);
     int GetTileIndexFromGridIndex(int X, int Y);
 
-    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
     FTileInfo& GetTileInfoFromLocation(const FVector Location);
 
 
-    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
     FTileInfo& GetTileInfoFromTileActor(const ATile* Tile);
 
     // Pathfinding functions
@@ -69,6 +70,6 @@ public:
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
     TArray<FTileInfo> Retrace(FTileInfo& Start, FTileInfo& End);
 
-    UFUNCTION(BlueprintCallable, Category = "Grid")
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
     TArray<FTileInfo> RequestPath(const FTileInfo& Start, const FTileInfo& End);
 };

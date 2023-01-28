@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "USCharacter.h"
 
 #include "USPlayerController.generated.h"
 
@@ -38,10 +39,6 @@ public:
     virtual void SetupInputComponent() override;
 
     // Methods
-    void Navigate();
+    UFUNCTION(BlueprintCallable, Category = "Utility")
     bool LineTraceUnderMouseCursor(FHitResult& HitResult);
-
-    AGrid* GetCurrentGrid();
-    FTileInfo& GetCurrentTile();
-    FTileInfo& GetTileUnderCursor();
 };

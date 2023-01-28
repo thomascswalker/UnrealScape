@@ -6,7 +6,6 @@
 AGrid::AGrid()
 {
     PrimaryActorTick.bCanEverTick = true;
-
     WorldSize.X = SizeX * TileSize;
     WorldSize.Y = SizeY * TileSize;
 }
@@ -15,6 +14,12 @@ AGrid::AGrid()
 void AGrid::BeginPlay()
 {
     Super::BeginPlay();
+}
+
+void AGrid::OnConstruction(const FTransform& Transform)
+{
+    WorldSize.X = SizeX * TileSize;
+    WorldSize.Y = SizeY * TileSize;
 }
 
 // Called every frame
@@ -30,11 +35,22 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
         return;
     }
 
+    //float XOffset = (SizeX * TileSize) / 2.f - (TileSize / 2.f);
+    //float YOffset = (SizeY * TileSize) / 2.f - (TileSize / 2.f);
+
+    //if (GEngine)
+    //{
+    //    FString Message = FString::Printf(L"XOffset: %f, YOffset: %f", XOffset, YOffset);
+    //    GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
+    //}
+
     for (int Y = 0; Y < SizeY; Y++)
     {
         for (int X = 0; X < SizeX; X++)
         {
-            FVector SpawnLocation = FVector(X * TileSize, Y * TileSize, 0.f);
+            float CX = (X * TileSize);  // - XOffset;
+            float CY = (Y * TileSize);  // - YOffset;
+            FVector SpawnLocation = FVector(CX, CY, 0.f);
 
             FTransform SpawnTransform;
             SpawnTransform.SetLocation(SpawnLocation);
@@ -52,8 +68,8 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
                 TileInfo.GridIndex.X = X;
                 TileInfo.GridIndex.Y = Y;
 
-                TileInfo.WorldPosition.X = SpawnTransform.GetLocation().X;
-                TileInfo.WorldPosition.Y = SpawnTransform.GetLocation().Y;
+                TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f);
+                TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f);
 
                 Tiles.Add(TileInfo);
                 FText Text = FText::FromString(FString::Printf(L"[%i, %i]", X, Y));
@@ -94,17 +110,17 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
 
 FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
 {
-    FVector ActualLocation = K2_GetActorLocation() + Location;
-
-    float PX = (ActualLocation.X + (WorldSize.X / 2.f)) / (float) WorldSize.X;
-    float PY = (ActualLocation.Y + (WorldSize.Y / 2.f)) / (float) WorldSize.Y;
-
+    // Get percentage of the full world size in X/Y
+    float PX = Location.X / (SizeX * TileSize);
+    float PY = Location.Y / (SizeY * TileSize);
     PX = std::clamp(PX, 0.f, 1.f);
     PY = std::clamp(PY, 0.f, 1.f);
 
-    int X = (SizeX - 1) * PX;
-    int Y = (SizeY - 1) * PX;
+    // Size * Percent = Tile Index
+    float X = (SizeX - 1) * PX;
+    float Y = (SizeX - 1) * PY;
 
+    // Return actual tile
     int Index = GetTileIndexFromGridIndex(X, Y);
     return Tiles[Index];
 }

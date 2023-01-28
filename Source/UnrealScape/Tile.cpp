@@ -9,6 +9,7 @@ ATile::ATile()
     PrimaryActorTick.bCanEverTick = true;
 
     USceneComponent* SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+    SceneComponent->AddLocalTransform(FTransform(FVector(50.f, 50.f, 0.f)));
     RootComponent = SceneComponent;
 
     // Construct the static mesh component
@@ -17,7 +18,8 @@ ATile::ATile()
     if (Mesh.Object)
     {
         StaticMeshComponent->SetStaticMesh(Mesh.Object);
-        StaticMeshComponent->SetRelativeScale3D(FVector(1.f, 1.f, .1));
+        StaticMeshComponent->SetRelativeScale3D(FVector(.95f, .95f, .1));
+        //StaticMeshComponent->AddLocalTransform(FTransform(FVector(50.f, 50.f, 0.f)));
     }
     StaticMeshComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
@@ -25,8 +27,8 @@ ATile::ATile()
     TextRenderComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TileText"));
     TextRenderComponent->SetHorizontalAlignment(EHTA_Center);
     TextRenderComponent->SetWorldSize(10.f);
-    TextRenderComponent->AddLocalTransform(FTransform(FVector(0.f, 0.f, 10.f)));
     TextRenderComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.f, 90.f, 90.f)));
+    TextRenderComponent->AddLocalTransform(FTransform(FVector(0.f, 0.f, 10.f)));
     TextRenderComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 }
 
