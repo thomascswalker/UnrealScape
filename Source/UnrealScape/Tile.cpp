@@ -18,16 +18,17 @@ ATile::ATile()
     if (Mesh.Object)
     {
         StaticMeshComponent->SetStaticMesh(Mesh.Object);
-        StaticMeshComponent->SetRelativeScale3D(FVector(.95f, .95f, .1));
+        StaticMeshComponent->SetRelativeScale3D(FVector(1.f, 1.f, .1));
     }
     StaticMeshComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
     // Text render
     TextRenderComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TileText"));
     TextRenderComponent->SetHorizontalAlignment(EHTA_Center);
-    TextRenderComponent->SetWorldSize(10.f);
+    TextRenderComponent->SetWorldSize(20.f);
     TextRenderComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.f, 90.f, 90.f)));
-    TextRenderComponent->AddLocalTransform(FTransform(FVector(0.f, 0.f, 10.f)));
+    TextRenderComponent->AddLocalTransform(FTransform(FVector(0.f, 0.f, 25.f)));
+    TextRenderComponent->SetTextRenderColor(FColor::Black);
     TextRenderComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 }
 

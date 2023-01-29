@@ -5,9 +5,10 @@
 #include "../Grid.h"
 #include "../Tile.h"
 #include "Components/ActorComponent.h"
-#include "Components/SplineComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "NavigatorComponent.generated.h"
 
@@ -15,15 +16,11 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALSCAPE_API UNavigatorComponent : public UActorComponent
 {
     GENERATED_BODY()
-    float MovementSpeed = 1.f;
-    USplineComponent* Spline;
-    float GoalThreshold = 50.f;
+
     FVector Goal;
     FVector NextPoint;
     float Length;
     float CurrentTime = 0.f;
-    float DistanceThreshold = 50.f;
-    float DistanceBetweenPoints = 50.f;
 
 public:
     // Sets default values for this component's properties
@@ -35,8 +32,18 @@ protected:
 
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
-    AGrid* CurrentGrid;
+    float MovementSpeed = 2.f;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    USplineComponent* Spline;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    float GoalThreshold = 10.f;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    float DistanceThreshold = 50.f;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    float DistanceBetweenPoints = 50.f;
 
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    AGrid* CurrentGrid;
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     FTileInfo CurrentTile;
 
