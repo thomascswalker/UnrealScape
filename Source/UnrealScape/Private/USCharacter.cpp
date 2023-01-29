@@ -8,13 +8,20 @@ AUSCharacter::AUSCharacter()
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw = false;
+    bUseControllerRotationRoll = false;
+
     // Modify default character movement values
-    GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
+    //GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 
     // Spring Arm and Camera
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     SpringArmComponent->TargetArmLength = 1200.f;
     SpringArmComponent->bDoCollisionTest = false;
+    SpringArmComponent->bInheritPitch = false;
+    SpringArmComponent->bInheritYaw = false;
+    SpringArmComponent->bInheritRoll = false;
     SpringArmComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.f, -45.f, 0.f)));
     SpringArmComponent->SetupAttachment(RootComponent);
 

@@ -66,21 +66,10 @@ void UNavigatorComponent::Navigate(const FTileInfo& TargetTile)
     UpdateCurrentGrid();
     UpdateCurrentTile();
 
-    if (GEngine)
-    {
-        FString Message = FString::Printf(L"Target: %s", *TargetTile.GridIndex.ToString());
-        GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Yellow, Message);
-    }
-
     // Request Path
     TArray<FTileInfo> Path = CurrentGrid->RequestPath(CurrentTile, TargetTile);
     if (Path.Num() == 0)
     {
-        if (GEngine)
-        {
-            FString Message = FString::Printf(L"Path not found.");
-            GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
-        }
         return;
     }
 
@@ -88,20 +77,26 @@ void UNavigatorComponent::Navigate(const FTileInfo& TargetTile)
     for (FTileInfo& Tile : Path)
     {
         Spline->AddSplineWorldPoint(Tile.WorldPosition);
-        if (GEngine)
-        {
-            int Count = Spline->GetNumberOfSplinePoints();
-            FString Message = FString::Printf(L"Spline Points: %i", Count);
-            GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
-        }
-
-        DrawDebugSphere(GetWorld(), Tile.WorldPosition, 10.f, 12, FColor::Cyan, true);
+        int Count = Spline->GetNumberOfSplinePoints();
+        Spline->SetSplinePointType(Count - 1, ESplinePointType::Linear);
         Goal = Tile.WorldPosition;
     }
     Length = Spline->GetSplineLength();
     Spline->Duration = Length;
     CurrentTime = 0.f;
     NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
+
+    // Initial rotation
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    if (!ControlledPawn)
+    {
+        return;
+    }
+    const FVector PlayerLocation = ControlledPawn->GetActorLocation();
+    FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, NextPoint);
+    Rotation.Pitch = 0.0;
+    Rotation.Roll = 0.0;
+    ControlledPawn->SetActorRotation(Rotation);
 }
 
 // Called every frame
@@ -138,19 +133,7 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     {
         CurrentTime += DistanceToNextPoint;
         NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
-    }
-
-    if (ControlledPawn != nullptr)
-    {
-        if (GEngine)
-        {
-            FString Message = FString::Printf(L"Current Point: %f", CurrentTime);
-            GEngine->AddOnScreenDebugMessage(32, 1.f, FColor::Yellow, Message);
-        }
-        FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
-
-        // Move
-        ControlledPawn->AddMovementInput(WorldDirection, 1.0, true);
+        UpdateCurrentTile();
 
         // Rotate
         // https://stackoverflow.com/questions/58719951/how-can-i-create-the-equivalent-of-unity-lookat-in-unreal-blueprint
@@ -158,5 +141,13 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
         Rotation.Pitch = 0.0;
         Rotation.Roll = 0.0;
         ControlledPawn->SetActorRotation(Rotation);
+    }
+
+    if (ControlledPawn != nullptr)
+    {
+        FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
+
+        // Move
+        ControlledPawn->AddMovementInput(WorldDirection, MovementSpeed, true);
     }
 }
