@@ -36,7 +36,7 @@ public:
 
 
     int GetF() const { return G + H; }
-    bool Equals(const FTileInfo& Other) const { return Actor == Other.Actor; }
+    bool Equals(const FTileInfo& Other) const { return GridIndex == Other.GridIndex; }
 
     bool operator==(const FTileInfo& Other) const { return Equals(Other); }
     bool operator!=(const FTileInfo& Other) const { return !Equals(Other); }

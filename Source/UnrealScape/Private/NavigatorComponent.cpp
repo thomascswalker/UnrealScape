@@ -43,20 +43,22 @@ void UNavigatorComponent::UpdateCurrentTile()
     FVector PawnLocation = ControlledPawn->GetActorLocation();
     PawnLocation.Z = 0.f;
 
-    // Trace location
-    TArray<AActor*> ActorsToIgnore;
-    ActorsToIgnore.Add(ControlledPawn);
-    FHitResult HitResult;
-    const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
-        this, PawnLocation, PawnLocation, 25.f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 5.f);
+    CurrentTile = CurrentGrid->GetTileInfoFromLocation(PawnLocation);
 
-    // If we hit any tiles, get the tile index
-    ATile* Tile = Cast<ATile>(HitResult.GetActor());
-    if (Tile)
-    {
-        CurrentTile = CurrentGrid->GetTileInfoFromTileActor(Tile);
-    }
+    // Trace location
+    //TArray<AActor*> ActorsToIgnore;
+    //ActorsToIgnore.Add(ControlledPawn);
+    //FHitResult HitResult;
+    //const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
+    //    this, PawnLocation, PawnLocation, 25.f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+    //    EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 5.f);
+
+    //// If we hit any tiles, get the tile index
+    //ATile* Tile = Cast<ATile>(HitResult.GetActor());
+    //if (Tile)
+    //{
+
+    //}
 }
 
 void UNavigatorComponent::Navigate(const FTileInfo& TargetTile)
@@ -136,7 +138,6 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
         UpdateCurrentTile();
 
         // Rotate
-        // https://stackoverflow.com/questions/58719951/how-can-i-create-the-equivalent-of-unity-lookat-in-unreal-blueprint
         FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, NextPoint);
         Rotation.Pitch = 0.0;
         Rotation.Roll = 0.0;
