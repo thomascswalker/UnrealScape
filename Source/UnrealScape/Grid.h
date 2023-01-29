@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Algo/Reverse.h"
 #include "Components/StaticMeshComponent.h"
+#include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Public\USUtils.h"
 
 #include <vector>
 
@@ -61,11 +61,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     FTileInfo& GetTileInfoFromLocation(const FVector Location);
 
-
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     FTileInfo& GetTileInfoFromTileActor(const ATile* Tile);
 
     // Pathfinding functions
+
+    bool IsWalkable(const FVector& Location);
+    bool IsWalkable(const FTileInfo& Tile);
     void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
     TArray<FTileInfo> Retrace(FTileInfo& Start, FTileInfo& End);

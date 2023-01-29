@@ -35,6 +35,8 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
         return;
     }
 
+    FVector Offset = GetActorLocation();
+
     for (int Y = 0; Y < SizeY; Y++)
     {
         for (int X = 0; X < SizeX; X++)
@@ -46,30 +48,31 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
             FTransform SpawnTransform;
             SpawnTransform.SetLocation(SpawnLocation);
 
-            // Construct the tile
-            AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(this, TileClass, SpawnTransform);
-            ATile* Tile = Cast<ATile>(Actor);
             FTileInfo TileInfo;
+            TileInfo.GridIndex.X = X;
+            TileInfo.GridIndex.Y = Y;
+
+            TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f) + Offset.X;
+            TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;
+
+            Tiles.Add(TileInfo);
+
+            // Construct the tile
+            //AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(this, TileClass, SpawnTransform);
+            //ATile* Tile = Cast<ATile>(Actor);
 
             // If it's constructed successfully, set the grid and world positions
-            if (Tile)
-            {
-                TileInfo.Actor = Tile;
+            //if (Tile)
+            //{
+            //TileInfo.Actor = Tile;
 
-                TileInfo.GridIndex.X = X;
-                TileInfo.GridIndex.Y = Y;
-
-                TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f) + GetActorLocation().X;
-                TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + GetActorLocation().Y;
-
-                Tiles.Add(TileInfo);
-                FText Text = FText::FromString(FString::Printf(L"[%i, %i]", X, Y));
-                Tile->SetText(Text);
-            }
+            //FText Text = FText::FromString(FString::Printf(L"[%i, %i]", X, Y));
+            //Tile->SetText(Text);
+            //}
 
             // Add to Tiles array and attach to this
-            Tile->FinishSpawning(SpawnTransform);
-            Tile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+            //Tile->FinishSpawning(SpawnTransform);
+            //Tile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
         }
     }
 }
@@ -102,9 +105,10 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
 FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
 {
     // Get percentage of the full world size in X/Y
-    FVector ActorLocation = GetActorLocation();
-    float PX = (Location.X - ActorLocation.X) / (SizeX * TileSize);
-    float PY = (Location.Y - ActorLocation.Y) / (SizeY * TileSize);
+    FVector Offset = GetActorLocation();
+    float PX = (Location.X - Offset.X + (TileSize / 2.f)) / (SizeX * TileSize);
+    float PY = (Location.Y - Offset.Y + (TileSize / 2.f)) / (SizeY * TileSize);
+
     PX = std::clamp(PX, 0.f, 1.f);
     PY = std::clamp(PY, 0.f, 1.f);
 
@@ -132,8 +136,33 @@ FTileInfo& AGrid::GetTileInfoFromTileActor(const ATile* Tile)
     return Tiles[Index];
 }
 
+inline bool AGrid::IsWalkable(const FVector& Location)
+{
+    FVector Start = Location;
+    FVector End = Start + FVector(0, 0, 25);
+
+    TArray<AActor*> ActorsToIgnore;
+    FHitResult HitResult;
+    const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
+        this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore,
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 60.f);
+
+    return !BlockingHit;
+}
+
+bool AGrid::IsWalkable(const FTileInfo& Tile)
+{
+    return IsWalkable(Tile.WorldPosition);
+}
+
 void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
 {
+    /*
+       -1  0  1
+    -1 [x][x][x]
+     0 [x][ ][x]
+     1 [x][x][x]
+    */
     for (int Y = -1; Y <= 1; Y++)
     {
         for (int X = -1; X <= 1; X++)
@@ -157,7 +186,7 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
             // Get the possible neighbor, and determine if it's walkable
             int Index = GetTileIndexFromGridIndex(CX, CY);
             FTileInfo PossibleNeighbor = Tiles[Index];
-            if (!PossibleNeighbor.Actor->IsWalkable())
+            if (!IsWalkable(PossibleNeighbor))
             {
                 continue;
             }
@@ -182,6 +211,11 @@ int AGrid::GetDistance(const FTileInfo& A, const FTileInfo& B)
 
 TArray<FTileInfo> AGrid::Retrace(FTileInfo& Start, FTileInfo& End)
 {
+    if (GEngine)
+    {
+        FString Message = FString::Printf(L"%s, %s", *Start.GridIndex.ToString(), *End.GridIndex.ToString());
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, Message);
+    }
     TArray<FTileInfo> Path;
     FTileInfo CurrentTile = End;
 
