@@ -6,11 +6,17 @@ AUSGameMode::AUSGameMode()
 {
     PlayerControllerClass = AUSPlayerController::StaticClass();
     DefaultPawnClass = AUSCharacter::StaticClass();
-    //auto Character =
-    //    ConstructorHelpers::FObjectFinder<AUSCharacter>(TEXT("AUSCharacter'/Game/BP_USCharacter.BP_USCharacter'"));
-    //if (Character.Object)
-    //{
-    //    auto Object = Character.Object;
-    //    DefaultPawnClass = Object->GetClass()->StaticClass();
-    //}
+    static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Blueprints/BP_USCharacter"));
+    if (PlayerPawnBPClass.Class != nullptr)
+    {
+        DefaultPawnClass = PlayerPawnBPClass.Class;
+    }
+
+    // set default controller to our Blueprinted controller
+    static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(
+        TEXT("/Game/Blueprints/BP_USPlayerController"));
+    if (PlayerControllerBPClass.Class != NULL)
+    {
+        PlayerControllerClass = PlayerControllerBPClass.Class;
+    }
 }

@@ -49,7 +49,7 @@ void UNavigatorComponent::UpdateCurrentTile()
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
         this, PawnLocation, PawnLocation, 25.f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
-        EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 5.f);
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 5.f);
 
     // If we hit any tiles, get the tile index
     ATile* Tile = Cast<ATile>(HitResult.GetActor());
@@ -95,7 +95,7 @@ void UNavigatorComponent::Navigate(const FTileInfo& TargetTile)
             GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, Message);
         }
 
-        DrawDebugSphere(GetWorld(), Tile.WorldPosition, 50.f, 12, FColor::Green, true);
+        DrawDebugSphere(GetWorld(), Tile.WorldPosition, 10.f, 12, FColor::Cyan, true);
         Goal = Tile.WorldPosition;
     }
     Length = Spline->GetSplineLength();
@@ -148,6 +148,15 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
             GEngine->AddOnScreenDebugMessage(32, 1.f, FColor::Yellow, Message);
         }
         FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
+
+        // Move
         ControlledPawn->AddMovementInput(WorldDirection, 1.0, true);
+
+        // Rotate
+        // https://stackoverflow.com/questions/58719951/how-can-i-create-the-equivalent-of-unity-lookat-in-unreal-blueprint
+        FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, NextPoint);
+        Rotation.Pitch = 0.0;
+        Rotation.Roll = 0.0;
+        ControlledPawn->SetActorRotation(Rotation);
     }
 }

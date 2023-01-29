@@ -10,9 +10,6 @@ AUSCharacter::AUSCharacter()
 
     // Modify default character movement values
     GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
-    bUseControllerRotationPitch = false;
-    bUseControllerRotationYaw = false;
-    bUseControllerRotationRoll = false;
 
     // Spring Arm and Camera
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -23,16 +20,6 @@ AUSCharacter::AUSCharacter()
 
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(SpringArmComponent);
-
-    // Player mesh
-    UStaticMeshComponent* PlayerSphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-    auto SphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
-    if (SphereMesh.Object)
-    {
-        PlayerSphere->SetStaticMesh(SphereMesh.Object);
-    }
-    PlayerSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    PlayerSphere->SetupAttachment(RootComponent);
 
     // Navigation
     NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("Navigator"));

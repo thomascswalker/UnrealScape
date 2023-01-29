@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/SceneComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "CoreMinimal.h"
 
 #include "NavigatorComponent.generated.h"
