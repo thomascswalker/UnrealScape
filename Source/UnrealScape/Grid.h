@@ -2,16 +2,14 @@
 
 #pragma once
 
+#include <vector>
 #include "Algo/Reverse.h"
 #include "Components/StaticMeshComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-#include "Public\USUtils.h"
-
-#include <vector>
-
 #include "Public/TileInfo.h"
+#include "Public\USUtils.h"
 
 #include "Grid.generated.h"
 
@@ -65,7 +63,6 @@ public:
     FTileInfo& GetTileInfoFromTileActor(const ATile* Tile);
 
     // Pathfinding functions
-
     bool IsWalkable(const FVector& Location);
     bool IsWalkable(const FTileInfo& Tile);
     void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
