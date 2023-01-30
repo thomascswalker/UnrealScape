@@ -57,6 +57,9 @@ public:
     int GetTileIndexFromGridIndex(int X, int Y);
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
+    FTileInfo& GetTileInfoFromGridIndex(const FVector2D GridIndex);
+
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
     FTileInfo& GetTileInfoFromLocation(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
@@ -65,6 +68,7 @@ public:
     // Pathfinding functions
     bool IsWalkable(const FVector& Location);
     bool IsWalkable(const FTileInfo& Tile);
+    bool IsWalkable(const FVector2D Index);
     void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
     TArray<FTileInfo> Retrace(FTileInfo& Start, FTileInfo& End);
