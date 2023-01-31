@@ -87,8 +87,13 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
 
 FTileInfo& AGrid::GetTileInfoFromGridIndex(FVector2D GridIndex)
 {
+    if (!IsGridIndexValid(GridIndex))
+    {
+        return FTileInfo();
+    }
     int Index = GetTileIndexFromGridIndex(GridIndex);
-    check(Tiles[Index].GridIndex == GridIndex) return Tiles[Index];
+    //check(Tiles[Index].GridIndex == GridIndex);
+    return Tiles[Index];
 }
 
 FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
@@ -107,21 +112,10 @@ FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
 
     // Return actual tile
     int Index = GetTileIndexFromGridIndex(X, Y);
-    return Tiles[Index];
-}
-
-FTileInfo& AGrid::GetTileInfoFromTileActor(const ATile* Tile)
-{
-    int Index = 0;
-    for (FTileInfo& Info : Tiles)
+    if (Index < 0 || Index > Tiles.Num() - 1)
     {
-        if (Info.Actor == Tile)
-        {
-            Index = GetTileIndexFromGridIndex(Info.GridIndex);
-        }
+        return FTileInfo();
     }
-
-    check(Index < Tiles.Num());
     return Tiles[Index];
 }
 
@@ -193,7 +187,12 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     if (bNWWalkable && bNWalkable && bWWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(NWIndex));
+
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(NWIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][X][ ]
@@ -201,7 +200,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     if (bNWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(NIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(NIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][ ][X]
@@ -209,7 +212,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     if (bNEWalkable && bNWalkable && bEWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(NEIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(NEIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][ ][ ]
@@ -217,7 +224,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     if (bEWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(EIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(EIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][ ][ ]
@@ -225,7 +236,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][X]
     if (bSEWalkable && bSWalkable && bEWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(SEIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(SEIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][ ][ ]
@@ -233,7 +248,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][X][ ]
     if (bSWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(SIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(SIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][ ][ ]
@@ -241,7 +260,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [X][ ][ ]
     if (bSWWalkable && bSWalkable && bWWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(SWIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(SWIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 
     // [ ][ ][ ]
@@ -249,7 +272,11 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     if (bWWalkable)
     {
-        Neighbors.Add(GetTileInfoFromGridIndex(WIndex));
+        FTileInfo Neighbor = GetTileInfoFromGridIndex(SIndex);
+        if (IsGridIndexValid(Neighbor.GridIndex))
+        {
+            Neighbors.Add(Neighbor);
+        }
     }
 }
 

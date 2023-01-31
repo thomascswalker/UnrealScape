@@ -47,7 +47,7 @@ public:
     // Called every frame
     virtual void OnConstruction(const FTransform& Transform) override;
     virtual void Tick(float DeltaTime) override;
-
+    
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     void ConstructTileActors(const FVector CenteredLocation);
 
@@ -62,10 +62,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     FTileInfo& GetTileInfoFromLocation(const FVector Location);
 
-    UFUNCTION(BlueprintCallable, Category = "Navigation")
-    FTileInfo& GetTileInfoFromTileActor(const ATile* Tile);
-
     // Pathfinding functions
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
     bool IsWalkable(const FVector& Location);
     bool IsWalkable(const FTileInfo& Tile);
     bool IsWalkable(const FVector2D Index);

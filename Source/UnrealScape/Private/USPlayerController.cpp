@@ -8,17 +8,14 @@ AUSPlayerController::AUSPlayerController()
     bAttachToPawn = true;
 }
 
-void AUSPlayerController::Tick(float DeltaTime)
-{
-
-}
+void AUSPlayerController::Tick(float DeltaTime) {}
 
 void AUSPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 }
 
-bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult)
+bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel)
 {
     FVector WorldLocation;
     FVector WorldDirection;
@@ -34,7 +31,7 @@ bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult)
 
     TArray<AActor*> ActorsToIgnore;
     const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-        this, Start, End, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore,
+        this, Start, End, UEngineTypes::ConvertToTraceType(CollisionChannel), false, ActorsToIgnore,
         EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 
     return BlockingHit;

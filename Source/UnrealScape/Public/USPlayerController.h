@@ -40,5 +40,5 @@ public:
 
     // Methods
     UFUNCTION(BlueprintCallable, Category = "Utility")
-    bool LineTraceUnderMouseCursor(FHitResult& HitResult);
+    bool LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
 };
