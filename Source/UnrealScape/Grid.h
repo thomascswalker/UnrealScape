@@ -47,7 +47,7 @@ public:
     // Called every frame
     virtual void OnConstruction(const FTransform& Transform) override;
     virtual void Tick(float DeltaTime) override;
-    
+
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     void ConstructTileActors(const FVector CenteredLocation);
 
@@ -55,18 +55,14 @@ public:
     bool IsGridIndexValid(int X, int Y);
     int GetTileIndexFromGridIndex(FVector2D Index);
     int GetTileIndexFromGridIndex(int X, int Y);
-
-    UFUNCTION(BlueprintCallable, Category = "Navigation")
-    FTileInfo& GetTileInfoFromGridIndex(const FVector2D GridIndex);
-
-    UFUNCTION(BlueprintCallable, Category = "Navigation")
-    FTileInfo& GetTileInfoFromLocation(const FVector Location);
+    TOptional<FTileInfo> GetTileInfoFromGridIndex(const FVector2D GridIndex);
+    TOptional<FTileInfo> GetTileInfoFromLocation(const FVector Location);
 
     // Pathfinding functions
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    bool IsWalkable(const FVector& Location);
-    bool IsWalkable(const FTileInfo& Tile);
-    bool IsWalkable(const FVector2D Index);
+    bool IsWalkableLocation(const FVector& Location);
+    bool IsWalkableTile(const FTileInfo& Tile);
+    bool IsWalkableGridIndex(const FVector2D GridIndex);
     void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
     TArray<FTileInfo> Retrace(FTileInfo& Start, FTileInfo& End);

@@ -21,8 +21,6 @@ UNavigatorComponent::UNavigatorComponent()
 void UNavigatorComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    // ...
 }
 
 void UNavigatorComponent::UpdateCurrentGrid()
@@ -43,14 +41,14 @@ void UNavigatorComponent::UpdateCurrentTile()
     FVector PawnLocation = ControlledPawn->GetActorLocation();
     PawnLocation.Z = 0.f;
 
-    FTileInfo* PossibleTile = &CurrentGrid->GetTileInfoFromLocation(PawnLocation);
-    if (CurrentGrid->IsGridIndexValid(PossibleTile->GridIndex))
+    TOptional<FTileInfo> PossibleTile = CurrentGrid->GetTileInfoFromLocation(PawnLocation);
+    if (PossibleTile.IsSet())
     {
-        CurrentTile = *PossibleTile;
+        CurrentTile = PossibleTile.GetValue();
     }
 }
 
-void UNavigatorComponent::Navigate(const FTileInfo& TargetTile)
+void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 {
     Spline->ClearSplinePoints();
 
@@ -139,5 +137,25 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
         // Move
         ControlledPawn->AddMovementInput(WorldDirection, MovementSpeed, true);
+    }
+}
+
+void UNavigatorComponent::NavigateToLocation(const FVector Location)
+{
+    INFO(FString::Printf(L"Navigating to %s", *Location.ToString()));
+    UpdateCurrentGrid();
+    if (!CurrentGrid->IsWalkableLocation(Location))
+    {
+        WARNING(FString::Printf(L"Location %s not walkable", *Location.ToString()));
+        return;
+    }
+    TOptional<FTileInfo> TargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
+    if (!TargetTile.IsSet())
+    {
+        FATAL(FString::Printf(L"Tile at location %s not found", *Location.ToString()));
+    }
+    else
+    {
+        NavigateToTile(TargetTile.GetValue());
     }
 }
