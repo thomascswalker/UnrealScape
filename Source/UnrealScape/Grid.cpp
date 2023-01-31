@@ -56,23 +56,6 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
             TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;
 
             Tiles.Add(TileInfo);
-
-            // Construct the tile
-            //AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(this, TileClass, SpawnTransform);
-            //ATile* Tile = Cast<ATile>(Actor);
-
-            // If it's constructed successfully, set the grid and world positions
-            //if (Tile)
-            //{
-            //TileInfo.Actor = Tile;
-
-            //FText Text = FText::FromString(FString::Printf(L"[%i, %i]", X, Y));
-            //Tile->SetText(Text);
-            //}
-
-            // Add to Tiles array and attach to this
-            //Tile->FinishSpawning(SpawnTransform);
-            //Tile->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
         }
     }
 }
@@ -92,6 +75,7 @@ int AGrid::GetTileIndexFromGridIndex(FVector2D GridIndex)
     int Index = (GridIndex.Y * SizeX) + GridIndex.X;
     if (Index > Tiles.Num() - 1)
     {
+        WARNING(FString::Printf(L"Index %i not found", Index));
         return -1;
     }
     return Index;
@@ -102,7 +86,22 @@ int AGrid::GetTileIndexFromGridIndex(int X, int Y)
     return GetTileIndexFromGridIndex(FVector2D(X, Y));
 }
 
-FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
+TOptional<FTileInfo> AGrid::GetTileInfoFromGridIndex(FVector2D GridIndex)
+{
+    if (!IsGridIndexValid(GridIndex))
+    {
+        return FTileInfo();
+    }
+    int Index = GetTileIndexFromGridIndex(GridIndex);
+    if (Index < 0 || Index > Tiles.Num() - 1)
+    {
+        WARNING(FString::Printf(L"Index %i not found", Index));
+        return TOptional<FTileInfo>();
+    }
+    return Tiles[Index];
+}
+
+TOptional<FTileInfo> AGrid::GetTileInfoFromLocation(const FVector Location)
 {
     // Get percentage of the full world size in X/Y
     FVector Offset = GetActorLocation();
@@ -118,25 +117,15 @@ FTileInfo& AGrid::GetTileInfoFromLocation(const FVector Location)
 
     // Return actual tile
     int Index = GetTileIndexFromGridIndex(X, Y);
-    return Tiles[Index];
-}
-
-FTileInfo& AGrid::GetTileInfoFromTileActor(const ATile* Tile)
-{
-    int Index = 0;
-    for (FTileInfo& Info : Tiles)
+    if (Index < 0 || Index > Tiles.Num() - 1)
     {
-        if (Info.Actor == Tile)
-        {
-            Index = GetTileIndexFromGridIndex(Info.GridIndex);
-        }
+        WARNING(FString::Printf(L"Index %i not found", Index));
+        return TOptional<FTileInfo>();
     }
-
-    check(Index < Tiles.Num());
     return Tiles[Index];
 }
 
-inline bool AGrid::IsWalkable(const FVector& Location)
+inline bool AGrid::IsWalkableLocation(const FVector& Location)
 {
     FVector Start = Location;
     FVector End = Start + FVector(0, 0, 25);
@@ -145,54 +134,152 @@ inline bool AGrid::IsWalkable(const FVector& Location)
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
         this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 60.f);
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 2.f);
 
     return !BlockingHit;
 }
 
-bool AGrid::IsWalkable(const FTileInfo& Tile)
+bool AGrid::IsWalkableTile(const FTileInfo& Tile)
 {
-    return IsWalkable(Tile.WorldPosition);
+    return IsWalkableLocation(Tile.WorldPosition);
+}
+
+bool AGrid::IsWalkableGridIndex(const FVector2D GridIndex)
+{
+    TOptional<FTileInfo> TileInfo = GetTileInfoFromGridIndex(GridIndex);
+    if (!TileInfo.IsSet())
+    {
+        return false;
+    }
+    return IsWalkableLocation(TileInfo.GetValue().WorldPosition);
 }
 
 void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
 {
     /*
        -1  0  1
-    -1 [x][x][x]
-     0 [x][ ][x]
-     1 [x][x][x]
+    -1 [X][X][X]
+     0 [X][O][X]
+     1 [X][X][X]
     */
-    for (int Y = -1; Y <= 1; Y++)
+
+    // Current tile coordinates
+    int CX = Tile.GridIndex.X;
+    int CY = Tile.GridIndex.Y;
+
+    // Neighbor indices
+    FVector2D NWIndex = FVector2D(CX - 1.f, CY - 1.f);
+    FVector2D NIndex = FVector2D(CX, CY - 1.f);
+    FVector2D NEIndex = FVector2D(CX + 1.f, CY - 1.f);
+    FVector2D EIndex = FVector2D(CX + 1.f, CY);
+    FVector2D SEIndex = FVector2D(CX + 1.f, CY + 1.f);
+    FVector2D SIndex = FVector2D(CX, CY + 1.f);
+    FVector2D SWIndex = FVector2D(CX - 1.f, CY + 1.f);
+    FVector2D WIndex = FVector2D(CX - 1.f, CY);
+
+    // Trace neighbor walkability
+    bool bNWWalkable = IsWalkableGridIndex(NWIndex);
+    bool bNWalkable = IsWalkableGridIndex(NIndex);
+    bool bNEWalkable = IsWalkableGridIndex(NEIndex);
+    bool bEWalkable = IsWalkableGridIndex(EIndex);
+    bool bSEWalkable = IsWalkableGridIndex(SEIndex);
+    bool bSWalkable = IsWalkableGridIndex(SIndex);
+    bool bSWWalkable = IsWalkableGridIndex(SWIndex);
+    bool bWWalkable = IsWalkableGridIndex(WIndex);
+
+    // [X][ ][ ]
+    // [ ][O][ ]
+    // [ ][ ][ ]
+    if (bNWWalkable && bNWalkable && bWWalkable)
     {
-        for (int X = -1; X <= 1; X++)
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(NWIndex);
+        if (Neighbor.IsSet())
         {
-            // Get actual index
-            int CX = Tile.GridIndex.X + X;
-            int CY = Tile.GridIndex.Y + Y;
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
 
-            // If the actual index is not within the grid, continue
-            if (!IsGridIndexValid(CX, CY))
-            {
-                continue;
-            }
+    // [ ][X][ ]
+    // [ ][O][ ]
+    // [ ][ ][ ]
+    if (bNWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(NIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
 
-            // If the relative index is 0:0, we're on the origin tile; continue
-            if (X == 0 && Y == 0)
-            {
-                continue;
-            }
+    // [ ][ ][X]
+    // [ ][O][ ]
+    // [ ][ ][ ]
+    if (bNEWalkable && bNWalkable && bEWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(NEIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
 
-            // Get the possible neighbor, and determine if it's walkable
-            int Index = GetTileIndexFromGridIndex(CX, CY);
-            FTileInfo PossibleNeighbor = Tiles[Index];
-            if (!IsWalkable(PossibleNeighbor))
-            {
-                continue;
-            }
+    // [ ][ ][ ]
+    // [ ][O][X]
+    // [ ][ ][ ]
+    if (bEWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(EIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
 
-            // Add this tile to the list
-            Neighbors.Add(Tiles[Index]);
+    // [ ][ ][ ]
+    // [ ][O][ ]
+    // [ ][ ][X]
+    if (bSEWalkable && bSWalkable && bEWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(SEIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
+
+    // [ ][ ][ ]
+    // [ ][O][ ]
+    // [ ][X][ ]
+    if (bSWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(SIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
+
+    // [ ][ ][ ]
+    // [ ][O][ ]
+    // [X][ ][ ]
+    if (bSWWalkable && bSWalkable && bWWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(SWIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
+        }
+    }
+
+    // [ ][ ][ ]
+    // [X][O][ ]
+    // [ ][ ][ ]
+    if (bWWalkable)
+    {
+        TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(WIndex);
+        if (Neighbor.IsSet())
+        {
+            Neighbors.Add(Neighbor.GetValue());
         }
     }
 }
@@ -211,11 +298,7 @@ int AGrid::GetDistance(const FTileInfo& A, const FTileInfo& B)
 
 TArray<FTileInfo> AGrid::Retrace(FTileInfo& Start, FTileInfo& End)
 {
-    if (GEngine)
-    {
-        FString Message = FString::Printf(L"%s, %s", *Start.GridIndex.ToString(), *End.GridIndex.ToString());
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, Message);
-    }
+    INFO(FString::Printf(L"Retracing path: %s to %s", *Start.GridIndex.ToString(), *End.GridIndex.ToString()));
     TArray<FTileInfo> Path;
     FTileInfo CurrentTile = End;
 
@@ -229,6 +312,7 @@ TArray<FTileInfo> AGrid::Retrace(FTileInfo& Start, FTileInfo& End)
         Count++;
         if (Count > Tiles.Num())
         {
+            WARNING(FString::Printf(L"Hit maximum tile count: %i", Tiles.Num()));
             return Path;
         }
     }

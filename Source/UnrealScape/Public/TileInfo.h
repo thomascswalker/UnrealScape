@@ -20,9 +20,6 @@ public:
     FVector2D Parent;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
-    ATile* Actor;
-
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
     FVector2D GridIndex;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
@@ -34,6 +31,8 @@ public:
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TileInfo")
     int H = 0;
 
+    FTileInfo(FVector2D Parent = FVector2D(0, 0), FVector2D GridIndex = FVector2D(-1, -1),
+              FVector WorldPosition = FVector(0, 0, 0)){};
 
     int GetF() const { return G + H; }
     bool Equals(const FTileInfo& Other) const { return GridIndex == Other.GridIndex; }
@@ -41,3 +40,5 @@ public:
     bool operator==(const FTileInfo& Other) const { return Equals(Other); }
     bool operator!=(const FTileInfo& Other) const { return !Equals(Other); }
 };
+
+

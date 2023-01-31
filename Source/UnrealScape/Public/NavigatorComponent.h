@@ -53,7 +53,10 @@ public:
     void UpdateCurrentTile();
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    void Navigate(const FTileInfo& TargetTile);
+    void NavigateToTile(const FTileInfo& TargetTile);
+
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
+    void NavigateToLocation(const FVector Location);
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,
