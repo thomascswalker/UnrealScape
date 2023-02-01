@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "../Grid.h"
 #include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
+#include "Grid.h"
 #include "Kismet/KismetMathLibrary.h"
 
 #include "NavigatorComponent.generated.h"

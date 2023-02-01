@@ -8,8 +8,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-#include "Public/TileInfo.h"
-#include "Public\USUtils.h"
+#include "TileInfo.h"
+#include "USUtils.h"
 
 #include "Grid.generated.h"
 
