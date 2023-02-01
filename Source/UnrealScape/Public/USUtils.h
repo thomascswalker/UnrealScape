@@ -19,13 +19,3 @@
 #define FATAL(Message)                                      \
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, \
                                      FString(__FUNCTION__) + "(" + FString::FromInt(__LINE__) + ") " + Message);
-
-/**
- * 
- */
-class UNREALSCAPE_API USUtils
-{
-public:
-    USUtils();
-    ~USUtils();
-};
