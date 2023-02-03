@@ -2,13 +2,15 @@
 
 #pragma once
 
-#include "Grid.h"
-#include "Tile.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameTaskComponent.h"
+#include "Grid.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "TaskExecutor.h"
+#include "Tile.h"
 #include "USCharacter.h"
 
 #include "USPlayerController.generated.h"
@@ -17,12 +19,15 @@
  * 
  */
 UCLASS()
-class UNREALSCAPE_API AUSPlayerController : public APlayerController
+class UNREALSCAPE_API AUSPlayerController : public APlayerController, public ITaskExecutor
 {
     GENERATED_BODY()
 
 public:
     AUSPlayerController();
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    UGameTaskComponent* GameTaskComponent;
 
     // Overrides
     virtual void Tick(float DeltaTime) override;
@@ -31,4 +36,6 @@ public:
     // Methods
     UFUNCTION(BlueprintCallable, Category = "Utility")
     bool LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
+
+    UNavigatorComponent* GetNavigatorComponent() override;
 };

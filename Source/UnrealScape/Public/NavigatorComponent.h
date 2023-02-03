@@ -11,6 +11,10 @@
 
 #include "NavigatorComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FReachedDestinationSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStoppedSignature);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALSCAPE_API UNavigatorComponent : public UActorComponent
 {
@@ -30,6 +34,14 @@ protected:
     virtual void BeginPlay() override;
 
 public:
+    UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
+    FMovingSignature Moving;
+
+    UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
+    FReachedDestinationSignature ReachedDestination;
+    UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
+    FStoppedSignature Stopped;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float MovementSpeed = 2.f;
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
