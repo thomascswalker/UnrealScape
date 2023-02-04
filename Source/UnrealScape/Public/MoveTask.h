@@ -26,9 +26,9 @@ public:
     void Unbind() override;
 
     UFUNCTION(BlueprintCallable, Category = "Game Tasks")
-    void OnStarted();
+    void OnStarted() override;
     UFUNCTION(BlueprintCallable, Category = "Game Tasks")
-    void OnCompleted();
+    void OnCompleted() override;
     UFUNCTION(BlueprintCallable, Category = "Game Tasks")
-    void OnCancelled();
+    void OnCancelled() override;
 };

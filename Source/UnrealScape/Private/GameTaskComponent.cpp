@@ -21,6 +21,9 @@ void UGameTaskComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                        FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    FString Message = FString::Printf(L"Number of tasks: %i", Tasks.Num());
+    TICK(Message, 8);
+
 }
 
 void UGameTaskComponent::Add(UPARAM(ref) UGameTask* Task)
@@ -31,34 +34,47 @@ void UGameTaskComponent::Add(UPARAM(ref) UGameTask* Task)
         return;
     }
     Task->TaskExecutor = TaskExecutor;
-    Tasks.Add(Task);
+    Tasks.Add(Task); // Add to end of task list
     FString Message = FString::Printf(L"Adding Task: %s; %i", *Task->Name, Tasks.Num());
     INFO(Message);
 }
 
 void UGameTaskComponent::Pop(UGameTask* Task)
 {
-    Tasks.Remove(Task);
-    Task->MarkAsGarbage();
+    FString Message = FString::Printf(L"Popping task: %s", *Task->Name);
+    INFO(Message);
 
+    Stop(Task);
+
+    // If there's more tasks, start the next one
     if (Tasks.Num() > 0)
     {
         Start();
     }
+    //else // Otherwise we'll kill everything
+    //{
+    //    StopAll();
+    //}
 }
 
 void UGameTaskComponent::Print(UGameTask* Task) {}
 
 void UGameTaskComponent::Stop(UGameTask* Task)
 {
-    Task->Unbind();
+    Task->Completed.RemoveDynamic(this, &UGameTaskComponent::Pop);
+    //Task->Cancelled.RemoveDynamic(this, &UGameTaskComponent::Stop);
+    int32 Index;
+    if (Tasks.Find(Task, Index))
+    {
+        Tasks.RemoveAt(Index);
+    }
 }
 
 void UGameTaskComponent::StopAll()
 {
     for (auto Task : Tasks)
     {
-        Task->OnCancelled();
+        Stop(Task);
     }
     Tasks.Empty();
 }
@@ -66,15 +82,20 @@ void UGameTaskComponent::StopAll()
 // https://benui.ca/unreal/delegates-intro/
 void UGameTaskComponent::Start()
 {
+    if (Tasks.Num() == 0)
+    {
+        WARNING(L"No tasks to execute!");
+        return;
+    }
+
+    CurrentTask = Tasks[0];
+    FString Message = FString::Printf(L"New task: %s", *CurrentTask->Name);
+    INFO(Message);
+
     if (CurrentTask != nullptr)
     {
-        CurrentTask->Started.RemoveAll(this);
-        CurrentTask->Completed.RemoveAll(this);
-        CurrentTask->Cancelled.RemoveAll(this);
+        CurrentTask->Completed.RemoveDynamic(this, &UGameTaskComponent::Pop);
     }
-    CurrentTask = Tasks[0];
-    CurrentTask->Started.AddUniqueDynamic(this, &UGameTaskComponent::Print);
-    CurrentTask->Completed.AddUniqueDynamic(this, &UGameTaskComponent::Pop);
-    CurrentTask->Cancelled.AddUniqueDynamic(this, &UGameTaskComponent::Stop);
+    CurrentTask->Completed.AddDynamic(this, &UGameTaskComponent::Pop);
     CurrentTask->Execute();
 }

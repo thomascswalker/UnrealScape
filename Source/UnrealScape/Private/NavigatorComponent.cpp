@@ -50,7 +50,7 @@ void UNavigatorComponent::UpdateCurrentTile()
 
 void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 {
-    if (Spline->GetNumberOfSplinePoints() > 0)
+    if (bIsMoving)
     {
         Stopped.Broadcast();
     }
@@ -65,7 +65,7 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     if (Path.Num() == 0)
     {
         WARNING(L"No path found.");
-        Stopped.Broadcast();
+        //Stopped.Broadcast();
         return;
     }
 
@@ -82,14 +82,14 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     CurrentTime = 0.f;
     NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
 
-    Moving.Broadcast();
+    //Moving.Broadcast();
 
     // Initial rotation
     APawn* ControlledPawn = Cast<APawn>(GetOwner());
     if (!ControlledPawn)
     {
         WARNING(L"Invalid pawn owner of this component.");
-        Stopped.Broadcast();
+        //Stopped.Broadcast();
         return;
     }
     const FVector PlayerLocation = ControlledPawn->GetActorLocation();
@@ -97,6 +97,8 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     Rotation.Pitch = 0.0;
     Rotation.Roll = 0.0;
     ControlledPawn->SetActorRotation(Rotation);
+
+    bIsMoving = true;
 }
 
 // Called every frame
@@ -107,7 +109,7 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
     if (Spline->GetNumberOfSplinePoints() == 0)
     {
-        Stopped.Broadcast();
+        //Stopped.Broadcast();
         return;
     }
 
@@ -125,7 +127,9 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     // If we're within the goal threshold, clear all points
     if (DistanceToGoal <= GoalThreshold)
     {
+        bIsMoving = false;
         Spline->ClearSplinePoints();
+        INFO(L"Reached!");
         ReachedDestination.Broadcast();
         return;
     }
@@ -159,13 +163,13 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
     if (!CurrentGrid->IsWalkableLocation(Location))
     {
         WARNING(FString::Printf(L"Location %s not walkable", *Location.ToString()));
-        Stopped.Broadcast();
+        //Stopped.Broadcast();
         return;
     }
     TOptional<FTileInfo> TargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
     if (!TargetTile.IsSet())
     {
-        Stopped.Broadcast();
+        //Stopped.Broadcast();
         FATAL(FString::Printf(L"Tile at location %s not found", *Location.ToString()));
     }
     else

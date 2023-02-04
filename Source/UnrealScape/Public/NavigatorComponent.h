@@ -58,6 +58,9 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     FTileInfo CurrentTile;
 
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    bool bIsMoving = false;
+
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     void UpdateCurrentGrid();
 

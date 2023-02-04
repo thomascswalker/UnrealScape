@@ -19,7 +19,7 @@ void UMoveTask::Execute()
         return;
     }
 
-    //Unbind();
+    Unbind();
     Bind();
 
     Navigator->NavigateToLocation(Location);
@@ -27,15 +27,13 @@ void UMoveTask::Execute()
 
 void UMoveTask::Bind()
 {
-    Navigator->Moving.AddUniqueDynamic(this, &UMoveTask::OnStarted);
-    Navigator->ReachedDestination.AddUniqueDynamic(this, &UMoveTask::OnCompleted);
-    Navigator->Stopped.AddUniqueDynamic(this, &UMoveTask::OnCancelled);
+    Navigator->ReachedDestination.AddDynamic(this, &UMoveTask::OnCompleted);
+    //Navigator->Stopped.AddDynamic(this, &UMoveTask::OnCancelled);
 }
 void UMoveTask::Unbind()
 {
-    Navigator->Moving.RemoveDynamic(this, &UMoveTask::OnStarted);
     Navigator->ReachedDestination.RemoveDynamic(this, &UMoveTask::OnCompleted);
-    Navigator->Stopped.RemoveDynamic(this, &UMoveTask::OnCancelled);
+    //Navigator->Stopped.RemoveDynamic(this, &UMoveTask::OnCancelled);
 }
 
 void UMoveTask::OnStarted()
@@ -47,15 +45,15 @@ void UMoveTask::OnStarted()
 void UMoveTask::OnCompleted()
 {
     SUCCESS(L"Reached target location!");
-    Unbind();
     Status = ETaskStatus::Completed;
+    Unbind();
     Completed.Broadcast(this);
 }
 
 void UMoveTask::OnCancelled()
 {
     WARNING(L"Cancelled task!");
+    Status = ETaskStatus::Cancelled;
     Unbind();
-    Status = ETaskStatus::Completed;
     Cancelled.Broadcast(this);
 }

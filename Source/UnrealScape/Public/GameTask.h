@@ -15,11 +15,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFailedSignature, UGameTask*, GameTa
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCompletedSignature, UGameTask*, GameTask);
 
 UENUM(BlueprintType)
-enum class ETaskStatus : uint8 {
+enum class ETaskStatus : uint8
+{
     Queued UMETA(DisplayName = "Queued"),
     Active UMETA(DisplayName = "Active"),
     Paused UMETA(DisplayName = "Paused"),
     Failed UMETA(DisplayName = "Failed"),
+    Cancelled UMETA(DisplayName = "Cancelled"),
     Completed UMETA(DisplayName = "Completed"),
 };
 
@@ -50,4 +52,9 @@ public:
     virtual void Execute() { return; }
     virtual void Bind() { return; }
     virtual void Unbind() { return; }
+
+
+    virtual void OnStarted() { return; }
+    virtual void OnCompleted() { return; }
+    virtual void OnCancelled() { return; }
 };
