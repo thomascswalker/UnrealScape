@@ -45,16 +45,11 @@ void UGameTaskComponent::Pop(UGameTask* Task)
     INFO(Message);
 
     Stop(Task);
-
     // If there's more tasks, start the next one
     if (Tasks.Num() > 0)
     {
         Start();
     }
-    //else // Otherwise we'll kill everything
-    //{
-    //    StopAll();
-    //}
 }
 
 void UGameTaskComponent::Print(UGameTask* Task) {}
