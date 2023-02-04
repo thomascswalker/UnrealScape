@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 
+#define TICK(Message, Key)                                         \
+    GEngine->AddOnScreenDebugMessage(Key, 5.0f, FColor::Cyan, \
+                                     FString(__FUNCTION__) + "(" + FString::FromInt(__LINE__) + ") " + Message);
+
 #define INFO(Message)                                         \
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, \
                                      FString(__FUNCTION__) + "(" + FString::FromInt(__LINE__) + ") " + Message);

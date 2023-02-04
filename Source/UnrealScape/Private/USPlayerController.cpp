@@ -6,6 +6,9 @@ AUSPlayerController::AUSPlayerController()
 {
     bShowMouseCursor = true;
     bAttachToPawn = true;
+
+    GameTaskComponent = CreateDefaultSubobject<UGameTaskComponent>(TEXT("GameTaskComponent"));
+    AddOwnedComponent(GameTaskComponent);
 }
 
 void AUSPlayerController::Tick(float DeltaTime) {}
@@ -35,4 +38,16 @@ bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, EColl
         EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 
     return BlockingHit;
+}
+
+UNavigatorComponent* AUSPlayerController::GetNavigatorComponent()
+
+{
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    if (ControlledPawn == nullptr)
+    {
+        FATAL(L"Failed to get NavigatorComponent.");
+        return nullptr;
+    }
+    return ControlledPawn->NavigatorComponent;
 }

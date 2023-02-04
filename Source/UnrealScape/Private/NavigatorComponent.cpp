@@ -50,6 +50,11 @@ void UNavigatorComponent::UpdateCurrentTile()
 
 void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 {
+    if (bIsMoving)
+    {
+        Stopped.Broadcast();
+    }
+    
     Spline->ClearSplinePoints();
 
     UpdateCurrentGrid();
@@ -59,6 +64,8 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     TArray<FTileInfo> Path = CurrentGrid->RequestPath(CurrentTile, TargetTile);
     if (Path.Num() == 0)
     {
+        WARNING(L"No path found.");
+        //Stopped.Broadcast();
         return;
     }
 
@@ -75,10 +82,14 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     CurrentTime = 0.f;
     NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
 
+    //Moving.Broadcast();
+
     // Initial rotation
     APawn* ControlledPawn = Cast<APawn>(GetOwner());
     if (!ControlledPawn)
     {
+        WARNING(L"Invalid pawn owner of this component.");
+        //Stopped.Broadcast();
         return;
     }
     const FVector PlayerLocation = ControlledPawn->GetActorLocation();
@@ -86,6 +97,8 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     Rotation.Pitch = 0.0;
     Rotation.Roll = 0.0;
     ControlledPawn->SetActorRotation(Rotation);
+
+    bIsMoving = true;
 }
 
 // Called every frame
@@ -96,6 +109,7 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
     if (Spline->GetNumberOfSplinePoints() == 0)
     {
+        //Stopped.Broadcast();
         return;
     }
 
@@ -113,7 +127,10 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     // If we're within the goal threshold, clear all points
     if (DistanceToGoal <= GoalThreshold)
     {
+        bIsMoving = false;
         Spline->ClearSplinePoints();
+        INFO(L"Reached!");
+        ReachedDestination.Broadcast();
         return;
     }
 
@@ -142,16 +159,17 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UNavigatorComponent::NavigateToLocation(const FVector Location)
 {
-    INFO(FString::Printf(L"Navigating to %s", *Location.ToString()));
     UpdateCurrentGrid();
     if (!CurrentGrid->IsWalkableLocation(Location))
     {
         WARNING(FString::Printf(L"Location %s not walkable", *Location.ToString()));
+        //Stopped.Broadcast();
         return;
     }
     TOptional<FTileInfo> TargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
     if (!TargetTile.IsSet())
     {
+        //Stopped.Broadcast();
         FATAL(FString::Printf(L"Tile at location %s not found", *Location.ToString()));
     }
     else

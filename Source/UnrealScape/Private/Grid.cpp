@@ -298,7 +298,6 @@ int AGrid::GetDistance(const FTileInfo& A, const FTileInfo& B)
 
 TArray<FTileInfo> AGrid::Retrace(FTileInfo& Start, FTileInfo& End)
 {
-    INFO(FString::Printf(L"Retracing path: %s to %s", *Start.GridIndex.ToString(), *End.GridIndex.ToString()));
     TArray<FTileInfo> Path;
     FTileInfo CurrentTile = End;
 
