@@ -54,7 +54,7 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     {
         Stopped.Broadcast();
     }
-    
+
     Spline->ClearSplinePoints();
 
     UpdateCurrentGrid();
@@ -64,36 +64,41 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     TArray<FTileInfo> Path = CurrentGrid->RequestPath(CurrentTile, TargetTile);
     if (Path.Num() == 0)
     {
+#ifdef UE_BUILD_DEBUG
         WARNING(L"No path found.");
-        //Stopped.Broadcast();
+#endif
+        return;
+    }
+
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    if (!ControlledPawn)
+    {
+#ifdef UE_BUILD_DEBUG
+        WARNING(L"Invalid pawn owner of this component.");
+#endif
         return;
     }
 
     // Convert path points to spline points
+    FVector PawnLocation = ControlledPawn->GetActorLocation();
+    PawnLocation.Z = 0.f;
+    Spline->AddSplineWorldPoint(PawnLocation);
+    int Count = Spline->GetNumberOfSplinePoints();
+    Spline->SetSplinePointType(Count - 1, ESplinePointType::Linear);
     for (FTileInfo& Tile : Path)
     {
         Spline->AddSplineWorldPoint(Tile.WorldPosition);
-        int Count = Spline->GetNumberOfSplinePoints();
+        Count = Spline->GetNumberOfSplinePoints();
         Spline->SetSplinePointType(Count - 1, ESplinePointType::Linear);
         Goal = Tile.WorldPosition;
     }
     Length = Spline->GetSplineLength();
     Spline->Duration = Length;
-    CurrentTime = 0.f;
+    CurrentTime = 1.f;
     NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
 
-    //Moving.Broadcast();
-
     // Initial rotation
-    APawn* ControlledPawn = Cast<APawn>(GetOwner());
-    if (!ControlledPawn)
-    {
-        WARNING(L"Invalid pawn owner of this component.");
-        //Stopped.Broadcast();
-        return;
-    }
-    const FVector PlayerLocation = ControlledPawn->GetActorLocation();
-    FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, NextPoint);
+    FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PawnLocation, NextPoint);
     Rotation.Pitch = 0.0;
     Rotation.Roll = 0.0;
     ControlledPawn->SetActorRotation(Rotation);
@@ -129,7 +134,7 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     {
         bIsMoving = false;
         Spline->ClearSplinePoints();
-        INFO(L"Reached!");
+        //INFO(L"Reached!");
         ReachedDestination.Broadcast();
         return;
     }
@@ -159,21 +164,51 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UNavigatorComponent::NavigateToLocation(const FVector Location)
 {
-    UpdateCurrentGrid();
-    if (!CurrentGrid->IsWalkableLocation(Location))
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    if (!ControlledPawn)
     {
-        WARNING(FString::Printf(L"Location %s not walkable", *Location.ToString()));
-        //Stopped.Broadcast();
         return;
     }
-    TOptional<FTileInfo> TargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
-    if (!TargetTile.IsSet())
+
+    UpdateCurrentGrid();
+    TOptional<FTileInfo> PossibleTargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
+    if (!PossibleTargetTile.IsSet())
     {
-        //Stopped.Broadcast();
+#ifdef UE_BUILD_DEBUG
         FATAL(FString::Printf(L"Tile at location %s not found", *Location.ToString()));
+        return;
+#endif
     }
-    else
+
+    FTileInfo TargetTile = PossibleTargetTile.GetValue();
+
+    if (!CurrentGrid->IsWalkableLocation(Location))
     {
-        NavigateToTile(TargetTile.GetValue());
+        TArray<FTileInfo> Neighbors;
+
+        CurrentGrid->GetNeighbors(TargetTile, Neighbors);
+        if (Neighbors.Num() == 0)
+        {
+#ifdef UE_BUILD_DEBUG
+            WARNING(FString::Printf(L"Location %s has no valid neighbors", *Location.ToString()));
+#endif
+            return;
+        }
+
+        FTileInfo ClosestNeighbor;
+        float ClosestDistance = 1000000.f;
+
+        for (auto& Neighbor : Neighbors)
+        {
+            float Distance = (ControlledPawn->GetActorLocation() - Neighbor.WorldPosition).Size2D();
+            if (Distance < ClosestDistance)
+            {
+                ClosestDistance = Distance;
+                ClosestNeighbor = Neighbor;
+            }
+        }
+        TargetTile = ClosestNeighbor;
     }
+
+    NavigateToTile(TargetTile);
 }

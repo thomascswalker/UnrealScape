@@ -9,13 +9,17 @@ UMoveTask::UMoveTask()
 
 void UMoveTask::Execute()
 {
+#ifdef UE_BUILD_DEBUG
     FString Message = FString::Printf(L"Moving to location: %s", *Location.ToString());
     INFO(Message);
+#endif
 
     Navigator = TaskExecutor->GetNavigatorComponent();
     if (Navigator == nullptr)
     {
+#ifdef UE_BUILD_DEBUG
         FATAL(L"Failed to find Navigator Component from Task Executor.");
+#endif
         return;
     }
 

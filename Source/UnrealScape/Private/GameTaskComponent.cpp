@@ -21,9 +21,6 @@ void UGameTaskComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                        FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    FString Message = FString::Printf(L"Number of tasks: %i", Tasks.Num());
-    TICK(Message, 8);
-
 }
 
 void UGameTaskComponent::Add(UPARAM(ref) UGameTask* Task)
@@ -34,15 +31,19 @@ void UGameTaskComponent::Add(UPARAM(ref) UGameTask* Task)
         return;
     }
     Task->TaskExecutor = TaskExecutor;
-    Tasks.Add(Task); // Add to end of task list
+    Tasks.Add(Task);  // Add to end of task list
+#ifdef UE_BUILD_DEBUG
     FString Message = FString::Printf(L"Adding Task: %s; %i", *Task->Name, Tasks.Num());
     INFO(Message);
+#endif
 }
 
 void UGameTaskComponent::Pop(UGameTask* Task)
 {
+#ifdef UE_BUILD_DEBUG
     FString Message = FString::Printf(L"Popping task: %s", *Task->Name);
     INFO(Message);
+#endif
 
     Stop(Task);
     // If there's more tasks, start the next one
@@ -57,7 +58,6 @@ void UGameTaskComponent::Print(UGameTask* Task) {}
 void UGameTaskComponent::Stop(UGameTask* Task)
 {
     Task->Completed.RemoveDynamic(this, &UGameTaskComponent::Pop);
-    //Task->Cancelled.RemoveDynamic(this, &UGameTaskComponent::Stop);
     int32 Index;
     if (Tasks.Find(Task, Index))
     {

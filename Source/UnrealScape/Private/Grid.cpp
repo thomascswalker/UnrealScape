@@ -75,7 +75,9 @@ int AGrid::GetTileIndexFromGridIndex(FVector2D GridIndex)
     int Index = (GridIndex.Y * SizeX) + GridIndex.X;
     if (Index > Tiles.Num() - 1)
     {
+#ifdef UE_BUILD_DEBUG
         WARNING(FString::Printf(L"Index %i not found", Index));
+#endif
         return -1;
     }
     return Index;
@@ -95,7 +97,9 @@ TOptional<FTileInfo> AGrid::GetTileInfoFromGridIndex(FVector2D GridIndex)
     int Index = GetTileIndexFromGridIndex(GridIndex);
     if (Index < 0 || Index > Tiles.Num() - 1)
     {
+#ifdef UE_BUILD_DEBUG
         WARNING(FString::Printf(L"Index %i not found", Index));
+#endif
         return TOptional<FTileInfo>();
     }
     return Tiles[Index];
@@ -119,7 +123,9 @@ TOptional<FTileInfo> AGrid::GetTileInfoFromLocation(const FVector Location)
     int Index = GetTileIndexFromGridIndex(X, Y);
     if (Index < 0 || Index > Tiles.Num() - 1)
     {
+#ifdef UE_BUILD_DEBUG
         WARNING(FString::Printf(L"Index %i not found", Index));
+#endif
         return TOptional<FTileInfo>();
     }
     return Tiles[Index];
@@ -311,7 +317,9 @@ TArray<FTileInfo> AGrid::Retrace(FTileInfo& Start, FTileInfo& End)
         Count++;
         if (Count > Tiles.Num())
         {
+#ifdef UE_BUILD_DEBUG
             WARNING(FString::Printf(L"Hit maximum tile count: %i", Tiles.Num()));
+#endif
             return Path;
         }
     }
