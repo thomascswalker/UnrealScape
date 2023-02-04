@@ -46,7 +46,9 @@ UNavigatorComponent* AUSPlayerController::GetNavigatorComponent()
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (ControlledPawn == nullptr)
     {
+#ifdef UE_BUILD_DEBUG
         FATAL(L"Failed to get NavigatorComponent.");
+#endif
         return nullptr;
     }
     return ControlledPawn->NavigatorComponent;
