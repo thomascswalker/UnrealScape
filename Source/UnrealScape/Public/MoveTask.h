@@ -28,7 +28,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Game Tasks")
     void OnStarted() override;
     UFUNCTION(BlueprintCallable, Category = "Game Tasks")
-    void OnCompleted() override;
+    void OnCompleted(AActor* Actor) override;
     UFUNCTION(BlueprintCallable, Category = "Game Tasks")
     void OnCancelled() override;
 };

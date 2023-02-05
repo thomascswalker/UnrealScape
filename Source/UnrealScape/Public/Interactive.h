@@ -7,6 +7,7 @@
 
 #include "Interactive.generated.h"
 
+
 UENUM(BlueprintType)
 enum class EEntityType : uint8
 {
@@ -29,5 +30,5 @@ class UNREALSCAPE_API IInteractive
 
     // Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-    virtual void Interact() { return; }
+    virtual void Interact(AActor* Actor) { return; }
 };

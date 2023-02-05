@@ -160,7 +160,7 @@ bool AGrid::IsWalkableGridIndex(const FVector2D GridIndex)
     return IsWalkableLocation(TileInfo.GetValue().WorldPosition);
 }
 
-void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
+void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors, bool bIncludeDiagonal)
 {
     /*
        -1  0  1
@@ -196,7 +196,7 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [X][ ][ ]
     // [ ][O][ ]
     // [ ][ ][ ]
-    if (bNWWalkable && bNWalkable && bWWalkable)
+    if (bNWWalkable && bNWalkable && bWWalkable && bIncludeDiagonal)
     {
         TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(NWIndex);
         if (Neighbor.IsSet())
@@ -220,7 +220,7 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][X]
     // [ ][O][ ]
     // [ ][ ][ ]
-    if (bNEWalkable && bNWalkable && bEWalkable)
+    if (bNEWalkable && bNWalkable && bEWalkable && bIncludeDiagonal)
     {
         TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(NEIndex);
         if (Neighbor.IsSet())
@@ -244,7 +244,7 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     // [ ][O][ ]
     // [ ][ ][X]
-    if (bSEWalkable && bSWalkable && bEWalkable)
+    if (bSEWalkable && bSWalkable && bEWalkable && bIncludeDiagonal)
     {
         TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(SEIndex);
         if (Neighbor.IsSet())
@@ -268,7 +268,7 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors)
     // [ ][ ][ ]
     // [ ][O][ ]
     // [X][ ][ ]
-    if (bSWWalkable && bSWalkable && bWWalkable)
+    if (bSWWalkable && bSWalkable && bWWalkable && bIncludeDiagonal)
     {
         TOptional<FTileInfo> Neighbor = GetTileInfoFromGridIndex(SWIndex);
         if (Neighbor.IsSet())
@@ -364,7 +364,7 @@ TArray<FTileInfo> AGrid::RequestPath(const FTileInfo& Start, const FTileInfo& En
         }
 
         TArray<FTileInfo> Neighbors;
-        GetNeighbors(CurrentTile, Neighbors);
+        GetNeighbors(CurrentTile, Neighbors, true);
         for (FTileInfo Neighbor : Neighbors)
         {
             int NeighborIndex = GetTileIndexFromGridIndex(Neighbor.GridIndex);

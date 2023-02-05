@@ -46,9 +46,10 @@ void UMoveTask::OnStarted()
     Started.Broadcast(this);
 }
 
-void UMoveTask::OnCompleted()
+void UMoveTask::OnCompleted(AActor* Actor)
 {
-    SUCCESS(L"Reached target location!");
+    FString Message = FString::Printf(L"%s reached target location", *Actor->GetName());
+    SUCCESS(Message);
     Status = ETaskStatus::Completed;
     Unbind();
     Completed.Broadcast(this);

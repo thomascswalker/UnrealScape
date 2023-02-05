@@ -16,6 +16,8 @@ void AUSPlayerController::Tick(float DeltaTime) {}
 void AUSPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
+
+    InputComponent->BindAction("LeftClick", IE_Released, this, &AUSPlayerController::OnLeftClick);
 }
 
 bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel)
@@ -52,4 +54,78 @@ UNavigatorComponent* AUSPlayerController::GetNavigatorComponent()
         return nullptr;
     }
     return ControlledPawn->NavigatorComponent;
+}
+
+void AUSPlayerController::OnLeftClick()
+{
+    FHitResult HitResult;
+
+    // If we hit an interactive object, move to it, then interact
+    if (LineTraceUnderMouseCursor(HitResult, COLLISION_INTERACTIVE))
+    {
+        TargetEntity = Cast<AGameEntity>(HitResult.GetActor());
+        if (!TargetEntity)
+        {
+            return;
+        }
+        MoveAndInteract(TargetEntity->GetActorLocation());
+    }
+    // Otherwise if we've hit just normal terrain, we'll just move
+    else if (LineTraceUnderMouseCursor(HitResult, COLLISION_TERRAIN))
+    {
+        TargetEntity = nullptr;
+        FVector Location = HitResult.Location;
+        Move(Location);
+    }
+    else
+    {
+        TargetEntity = nullptr;
+    }
+}
+
+void AUSPlayerController::Move(const FVector Location)
+{
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    if (!ControlledPawn)
+    {
+        return;
+    }
+    ControlledPawn->NavigatorComponent->NavigateToLocation(Location);
+}
+
+void AUSPlayerController::MoveAndInteract(const FVector Location)
+{
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    if (!ControlledPawn)
+    {
+        return;
+    }
+
+    ControlledPawn->NavigatorComponent->UpdateCurrentGrid();
+    ControlledPawn->NavigatorComponent->UpdateCurrentTile();
+
+    float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
+    INFO(FString::FromInt(Distance));
+    if (Distance < TargetEntity->InteractDistance)
+    {
+        TargetEntity->Interact(ControlledPawn);
+        return;
+    }
+
+    if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
+    {
+        ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
+    }
+    ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
+    ControlledPawn->NavigatorComponent->NavigateToLocation(Location);
+}
+
+void AUSPlayerController::InteractionComplete()
+{
+    INFO(L"Interaction complete!");
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    if (!ControlledPawn)
+    {
+        return;
+    }
 }

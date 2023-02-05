@@ -63,7 +63,7 @@ public:
     bool IsWalkableLocation(const FVector& Location);
     bool IsWalkableTile(const FTileInfo& Tile);
     bool IsWalkableGridIndex(const FVector2D GridIndex);
-    void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors);
+    void GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors, bool bIncludeDiagonal = true);
     int GetDistance(const FTileInfo& A, const FTileInfo& B);
     TArray<FTileInfo> Retrace(FTileInfo& Start, FTileInfo& End);
 
