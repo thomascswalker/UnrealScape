@@ -50,6 +50,8 @@ void UNavigatorComponent::UpdateCurrentTile()
 
 void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 {
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+
     if (bIsMoving)
     {
         Stopped.Broadcast();
@@ -70,7 +72,7 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
         return;
     }
 
-    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    
     if (!ControlledPawn)
     {
 #ifdef UE_BUILD_DEBUG
@@ -80,7 +82,7 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     }
 
     // Convert path points to spline points
-    FVector PawnLocation = ControlledPawn->GetActorLocation();
+    FVector PawnLocation = CurrentTile.WorldPosition;
     PawnLocation.Z = 0.f;
     Spline->AddSplineWorldPoint(PawnLocation);
     int Count = Spline->GetNumberOfSplinePoints();
@@ -134,8 +136,7 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     {
         bIsMoving = false;
         Spline->ClearSplinePoints();
-        //INFO(L"Reached!");
-        ReachedDestination.Broadcast();
+        ReachedDestination.Broadcast(ControlledPawn);
         return;
     }
 
@@ -176,8 +177,8 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
     {
 #ifdef UE_BUILD_DEBUG
         FATAL(FString::Printf(L"Tile at location %s not found", *Location.ToString()));
-        return;
 #endif
+        return;
     }
 
     FTileInfo TargetTile = PossibleTargetTile.GetValue();
@@ -186,7 +187,7 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
     {
         TArray<FTileInfo> Neighbors;
 
-        CurrentGrid->GetNeighbors(TargetTile, Neighbors);
+        CurrentGrid->GetNeighbors(TargetTile, Neighbors, false);
         if (Neighbors.Num() == 0)
         {
 #ifdef UE_BUILD_DEBUG

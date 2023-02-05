@@ -12,6 +12,7 @@
 #include "TaskExecutor.h"
 #include "Tile.h"
 #include "USCharacter.h"
+#include "GameEntity.h"
 
 #include "USPlayerController.generated.h"
 
@@ -29,6 +30,9 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
     UGameTaskComponent* GameTaskComponent;
 
+    AGameEntity* TargetEntity;
+    FDelegateHandle TargetEntityInteractHandle;
+
     // Overrides
     virtual void Tick(float DeltaTime) override;
     virtual void SetupInputComponent() override;
@@ -38,4 +42,16 @@ public:
     bool LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
 
     UNavigatorComponent* GetNavigatorComponent() override;
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void OnLeftClick();
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void Move(const FVector Location);
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void MoveAndInteract(const FVector Location);
+
+    UFUNCTION(BlueprintCallable, Category = "Interaction")
+    void InteractionComplete();
 };

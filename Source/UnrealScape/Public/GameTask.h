@@ -55,6 +55,6 @@ public:
 
 
     virtual void OnStarted() { return; }
-    virtual void OnCompleted() { return; }
+    virtual void OnCompleted(AActor* Actor) { return; }
     virtual void OnCancelled() { return; }
 };
