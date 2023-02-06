@@ -37,7 +37,7 @@ bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, EColl
     TArray<AActor*> ActorsToIgnore;
     const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
         this, Start, End, UEngineTypes::ConvertToTraceType(CollisionChannel), false, ActorsToIgnore,
-        EDrawDebugTrace::ForDuration, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 
     return BlockingHit;
 }
