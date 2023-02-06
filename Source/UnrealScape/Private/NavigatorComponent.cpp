@@ -14,7 +14,7 @@ UNavigatorComponent::UNavigatorComponent()
     // Create spline
     Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
     Spline->ClearSplinePoints();
-    Spline->bDrawDebug = true;
+    Spline->bDrawDebug = false;
 }
 
 // Called when the game starts
