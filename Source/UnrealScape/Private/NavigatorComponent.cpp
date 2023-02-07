@@ -83,7 +83,6 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 
     // Convert path points to spline points
     FVector PawnLocation = CurrentTile.WorldPosition;
-    PawnLocation.Z = 0.f;
     Spline->AddSplineWorldPoint(PawnLocation);
     int Count = Spline->GetNumberOfSplinePoints();
     Spline->SetSplinePointType(Count - 1, ESplinePointType::Linear);
@@ -211,5 +210,26 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
         TargetTile = ClosestNeighbor;
     }
 
+    if (!CurrentGrid->IsWorldPositionValid(Location))
+    {
+        return;
+    }
     NavigateToTile(TargetTile);
+}
+
+FVector UNavigatorComponent::GetMovementVector()
+{
+    FVector PawnLocation = GetOwner()->GetActorLocation();
+
+    TArray<AActor*> ActorsToIgnore;
+    FHitResult HitResult;
+    const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
+        this, PawnLocation, PawnLocation + TraceOffset, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false, ActorsToIgnore,
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+    if (!BlockingHit)
+    {
+        return FVector();
+    }
+    FVector PawnTerrainLocation = HitResult.Location;
+    return PawnTerrainLocation;
 }

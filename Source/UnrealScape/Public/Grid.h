@@ -19,12 +19,15 @@ class UNREALSCAPE_API AGrid : public AActor
     GENERATED_BODY()
 
     FVector WorldOrigin;
-    FVector2d WorldSize;
+    FVector WorldSize;
 
     UClass* TileClass = ATile::StaticClass();
 
 public:
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Navigation")
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Debug")
+    bool bDrawDebugLines = false;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Navigation")
     TArray<FTileInfo> Tiles;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
@@ -33,8 +36,11 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     int SizeY = 5;
 
-    UPROPERTY(EditAnywhere, Category = "Navigation")
-    float TileSize = 50.0;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    float Height = 10.f;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    float TileSize = 100.0;
 
     // Sets default values for this actor's properties
     AGrid();
@@ -49,8 +55,9 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    void ConstructTileActors(const FVector CenteredLocation);
+    void ConstructTileActors();
 
+    bool IsWorldPositionValid(FVector Position);
     bool IsGridIndexValid(FVector2D Index);
     bool IsGridIndexValid(int X, int Y);
     int GetTileIndexFromGridIndex(FVector2D Index);
