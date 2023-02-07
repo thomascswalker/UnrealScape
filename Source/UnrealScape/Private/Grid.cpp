@@ -64,14 +64,14 @@ void AGrid::ConstructTileActors()
             TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f) + Offset.X;
             TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;  
 
-            FVector Start = TileInfo.WorldPosition + FVector(0, 0, Offset.Z + Height);
-            FVector End = TileInfo.WorldPosition + FVector(0, 0, Offset.Z - Height);
+            FVector Start = TileInfo.WorldPosition + FVector(0, 0, Height);
+            FVector End = TileInfo.WorldPosition - FVector(0, 0, Height);
 
             TArray<AActor*> ActorsToIgnore;
             FHitResult HitResult;
             const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
                 World, Start, End, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false, ActorsToIgnore,
-                EDrawDebugTrace::ForDuration, HitResult, true);
+                EDrawDebugTrace::None, HitResult, true);
 
             if (BlockingHit)
             {

@@ -83,7 +83,6 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 
     // Convert path points to spline points
     FVector PawnLocation = CurrentTile.WorldPosition;
-    //PawnLocation.Z = 0.f;
     Spline->AddSplineWorldPoint(PawnLocation);
     int Count = Spline->GetNumberOfSplinePoints();
     Spline->SetSplinePointType(Count - 1, ESplinePointType::Linear);

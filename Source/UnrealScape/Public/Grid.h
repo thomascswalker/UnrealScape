@@ -27,7 +27,7 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Debug")
     bool bDrawDebugLines = false;
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Navigation")
+    UPROPERTY(BlueprintReadOnly, Category = "Navigation")
     TArray<FTileInfo> Tiles;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
