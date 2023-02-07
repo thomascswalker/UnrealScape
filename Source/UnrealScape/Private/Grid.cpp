@@ -6,8 +6,6 @@
 AGrid::AGrid()
 {
     PrimaryActorTick.bCanEverTick = true;
-    WorldSize.X = SizeX * TileSize;
-    WorldSize.Y = SizeY * TileSize;
 }
 
 // Called when the game starts or when spawned
@@ -18,8 +16,21 @@ void AGrid::BeginPlay()
 
 void AGrid::OnConstruction(const FTransform& Transform)
 {
+    UWorld* World = GetWorld();
+    FlushPersistentDebugLines(World);
     WorldSize.X = SizeX * TileSize;
     WorldSize.Y = SizeY * TileSize;
+    WorldSize.Z = Height;
+
+    if (bDrawDebugLines)
+    {
+        FVector HalfWorldSize = WorldSize / 2.f;
+        DrawDebugBox(World, GetActorLocation() + HalfWorldSize, HalfWorldSize, FColor::Red, false, 9999.f,
+                     0, 10.f);
+    }
+
+    Tiles.Empty();
+    ConstructTileActors();
 }
 
 // Called every frame
@@ -28,13 +39,14 @@ void AGrid::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-void AGrid::ConstructTileActors(const FVector CenteredLocation)
+void AGrid::ConstructTileActors()
 {
     if (Tiles.Num() > 0)
     {
         return;
     }
 
+    UWorld* World = GetWorld();
     FVector Offset = GetActorLocation();
 
     for (int Y = 0; Y < SizeY; Y++)
@@ -45,19 +57,48 @@ void AGrid::ConstructTileActors(const FVector CenteredLocation)
             float CY = (Y * TileSize);  // - YOffset;
             FVector SpawnLocation = FVector(CX, CY, 0.f);
 
-            FTransform SpawnTransform;
-            SpawnTransform.SetLocation(SpawnLocation);
-
             FTileInfo TileInfo;
             TileInfo.GridIndex.X = X;
             TileInfo.GridIndex.Y = Y;
 
             TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f) + Offset.X;
-            TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;
+            TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;  
+
+            FVector Start = TileInfo.WorldPosition + FVector(0, 0, Offset.Z + Height);
+            FVector End = TileInfo.WorldPosition + FVector(0, 0, Offset.Z - Height);
+
+            TArray<AActor*> ActorsToIgnore;
+            FHitResult HitResult;
+            const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
+                World, Start, End, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false, ActorsToIgnore,
+                EDrawDebugTrace::ForDuration, HitResult, true);
+
+            if (BlockingHit)
+            {
+                INFO(FString::FromInt(HitResult.Location.Z));
+                TileInfo.WorldPosition.Z = HitResult.Location.Z;
+            }
+
+            //if (bDrawDebugLines)
+            //{
+            //    DrawDebugPoint(World, TileInfo.WorldPosition, 25.f, FColor::Green, false, 9999.f, 0);
+            //}
+            //else
+            //{
+            //    FlushPersistentDebugLines(World);
+            //}
 
             Tiles.Add(TileInfo);
         }
     }
+}
+
+bool AGrid::IsWorldPositionValid(FVector Position)
+{
+    FVector ActorLocation = GetActorLocation();
+    bool LessThan = Position.X < ActorLocation.X && Position.Y < ActorLocation.Y && Position.Z < ActorLocation.Z;
+    bool GreaterThan = Position.X > WorldSize.X && Position.Y > WorldSize.Y && Position.Z > WorldSize.Z;
+    return !(LessThan && GreaterThan);
 }
 
 bool AGrid::IsGridIndexValid(FVector2D Index)
@@ -76,7 +117,7 @@ int AGrid::GetTileIndexFromGridIndex(FVector2D GridIndex)
     if (Index > Tiles.Num() - 1)
     {
 #ifdef UE_BUILD_DEBUG
-        WARNING(FString::Printf(L"Index %i not found", Index));
+        WARNING(FString::Printf(L"Index %i not found from grid index %s", Index, *GridIndex.ToString()));
 #endif
         return -1;
     }
@@ -133,13 +174,13 @@ TOptional<FTileInfo> AGrid::GetTileInfoFromLocation(const FVector Location)
 
 inline bool AGrid::IsWalkableLocation(const FVector& Location)
 {
-    FVector Start = Location;
-    FVector End = Start + FVector(0, 0, 25);
+    FVector Start = Location + FVector(0, 0, 200);
+    FVector End = Location + FVector(0, 0, -200);
 
     TArray<AActor*> ActorsToIgnore;
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
-        this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore,
+        this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(COLLISION_OBSTACLE), false, ActorsToIgnore,
         EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 2.f);
 
     return !BlockingHit;
@@ -368,6 +409,10 @@ TArray<FTileInfo> AGrid::RequestPath(const FTileInfo& Start, const FTileInfo& En
         for (FTileInfo Neighbor : Neighbors)
         {
             int NeighborIndex = GetTileIndexFromGridIndex(Neighbor.GridIndex);
+            if (NeighborIndex < 0)
+            {
+                continue;
+            }
             Neighbor = Tiles[NeighborIndex];
 
             bool InOpen = OpenSet.Contains(Neighbor);

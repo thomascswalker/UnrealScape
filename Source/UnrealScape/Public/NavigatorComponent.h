@@ -52,6 +52,8 @@ public:
     float DistanceThreshold = 50.f;
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float DistanceBetweenPoints = 50.f;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    FVector TraceOffset = FVector(0,0,-200);
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     AGrid* CurrentGrid;
@@ -72,6 +74,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     void NavigateToLocation(const FVector Location);
+
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
+    FVector GetMovementVector();
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,

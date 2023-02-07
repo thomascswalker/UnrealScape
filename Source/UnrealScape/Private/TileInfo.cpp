@@ -2,3 +2,8 @@
 
 
 #include "TileInfo.h"
+
+FVector FTileInfo::GetTracedWorldPosition()
+{
+    return FVector();
+}
