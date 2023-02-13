@@ -86,4 +86,5 @@ void AUSCharacter::OnCameraZoom(float Delta)
     }
 
     SpringArmComponent->TargetArmLength = NewLength;
+    CameraComponent->PostProcessSettings.DepthOfFieldFocalDistance = NewLength;
 }

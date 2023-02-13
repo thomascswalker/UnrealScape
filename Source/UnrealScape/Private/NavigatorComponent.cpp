@@ -266,7 +266,7 @@ EFloorLevel UNavigatorComponent::GetFloorAbove()
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
         GetWorld(), ControlledPawn->GetActorLocation(), ControlledPawn->GetActorLocation() + FVector(0, 0, 200),
-        UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::ForOneFrame,
+        UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::None,
         HitResult, true, FColor::Red, FColor::Green);
     if (!BlockingHit)
     {
