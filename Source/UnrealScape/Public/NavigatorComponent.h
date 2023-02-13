@@ -47,27 +47,35 @@ protected:
     // Called when the game starts
     virtual void BeginPlay() override;
 
+    // Called every frame
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+                               FActorComponentTickFunction* ThisTickFunction) override;
+
 public:
     UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
     FMovingSignature Moving;
 
     UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
     FReachedDestinationSignature ReachedDestination;
+
     UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
     FStoppedSignature Stopped;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float MovementSpeed = 2.f;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     USplineComponent* Spline;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float GoalThreshold = 10.f;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
-    float DistanceThreshold = 50.f;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
-    FVector TraceOffset = FVector(0, 0, -200);
+    float PointThreshold = 25.f;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     AGrid* CurrentGrid;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     FTileInfo CurrentTile;
 
@@ -93,14 +101,13 @@ public:
     void NavigateToLocation(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    FVector GetMovementVector();
+    FVector GetActorFeet();
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    EFloorLevel GetCurrentFloor();
+    void MoveActor();
 
-    // Called every frame
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-                               FActorComponentTickFunction* ThisTickFunction) override;
+    UFUNCTION(BlueprintCallable, Category = "Navigation")
+    EFloorLevel GetFloorAbove();
 
 #if ENABLE_VISUAL_LOG
     virtual void GrabDebugSnapshot(FVisualLogEntry* Snapshot) const override;
