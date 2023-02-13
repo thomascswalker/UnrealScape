@@ -11,7 +11,30 @@ AUSPlayerController::AUSPlayerController()
     AddOwnedComponent(GameTaskComponent);
 }
 
-void AUSPlayerController::Tick(float DeltaTime) {}
+void AUSPlayerController::Tick(float DeltaTime)
+{
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    if (!ControlledPawn)
+    {
+        return;
+    }
+    bool bInsideBuilding = ControlledPawn->NavigatorComponent->bInsideBuilding;
+    INFO(FString::FromInt(bInsideBuilding));
+    TArray<AActor*> Z1Actors;
+    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Z1"), Z1Actors);
+
+    TArray<AActor*> Z2Actors;
+    UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Z2"), Z2Actors);
+
+    for (AActor* Actor : Z1Actors)
+    {
+        Actor->SetActorHiddenInGame(bInsideBuilding);
+    }
+    for (AActor* Actor : Z2Actors)
+    {
+        Actor->SetActorHiddenInGame(bInsideBuilding);
+    }
+}
 
 void AUSPlayerController::SetupInputComponent()
 {

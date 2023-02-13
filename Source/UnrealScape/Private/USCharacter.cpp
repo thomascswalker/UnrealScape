@@ -8,13 +8,15 @@ AUSCharacter::AUSCharacter()
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
+    GetCharacterMovement()->GravityScale = 0.f;
+
     bUseControllerRotationPitch = false;
     bUseControllerRotationYaw = false;
     bUseControllerRotationRoll = false;
 
     // Spring Arm
     SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-    SpringArmComponent->TargetArmLength = 1200.f;
+    SpringArmComponent->TargetArmLength = 2500.f;
     SpringArmComponent->bDoCollisionTest = false;
     SpringArmComponent->bInheritPitch = false;
     SpringArmComponent->bInheritYaw = false;
@@ -25,7 +27,7 @@ AUSCharacter::AUSCharacter()
     // Camera
     CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     CameraComponent->SetupAttachment(SpringArmComponent);
-
+    
     // Navigation
     NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("Navigator"));
     AddOwnedComponent(NavigatorComponent);
@@ -77,7 +79,7 @@ void AUSCharacter::OnCameraRotateUp(float Value)
 void AUSCharacter::OnCameraZoom(float Delta)
 {
     float NewLength = SpringArmComponent->TargetArmLength - (Delta * CameraZoomSpeed);
-    bool bInRange = UKismetMathLibrary::InRange_FloatFloat(NewLength, 100.f, 1200.f);
+    bool bInRange = UKismetMathLibrary::InRange_FloatFloat(NewLength, 100.f, 2500.f);
     if (!bInRange)
     {
         return;
