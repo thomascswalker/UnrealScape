@@ -11,6 +11,8 @@
 
 #include "GameEntity.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractionComplete, AGameEntity*, Entity);
+
 UCLASS()
 class UNREALSCAPE_API AGameEntity : public AActor, public IInteractive
 {
@@ -20,7 +22,6 @@ public:
     // Sets default values for this actor's properties
     AGameEntity();
 
-    UStaticMeshComponent* StaticMeshComponent;
     EEntityType Type;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
@@ -33,6 +34,9 @@ protected:
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
+
+    UPROPERTY(BlueprintCallable, Category = "Event Dispatchers")
+    FInteractionComplete InteractionComplete;
 
     UFUNCTION(BlueprintNativeEvent)
     void Interact(AActor* Actor) override;

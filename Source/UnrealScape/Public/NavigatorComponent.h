@@ -29,6 +29,17 @@ enum class EFloorLevel : uint8
     Z2 UMETA(DisplayName = "Z2"),
 };
 
+USTRUCT(BlueprintType)
+struct FNavigationRequest
+{
+public:
+    GENERATED_BODY()
+    bool bCanMove;
+    FVector Start;
+    FVector End;
+    TArray<FTileInfo> Path;
+};
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALSCAPE_API UNavigatorComponent : public UActorComponent, public IVisualLoggerDebugSnapshotInterface
 {

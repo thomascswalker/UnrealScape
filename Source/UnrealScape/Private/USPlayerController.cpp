@@ -108,7 +108,6 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
     ControlledPawn->NavigatorComponent->UpdateCurrentTile();
 
     float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
-    INFO(FString::FromInt(Distance));
     if (Distance < TargetEntity->InteractDistance)
     {
         TargetEntity->Interact(ControlledPawn);
@@ -120,17 +119,20 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
         ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
     }
     ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
+    TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
     ControlledPawn->NavigatorComponent->NavigateToLocation(Location);
 }
 
-void AUSPlayerController::InteractionComplete()
+void AUSPlayerController::InteractionComplete(AGameEntity* Entity)
 {
-    INFO(L"Interaction complete!");
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
     {
         return;
     }
+
+    ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(Entity, &AGameEntity::Interact);
+    Entity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
 }
 
 void AUSPlayerController::UpdateFloorVisibility()

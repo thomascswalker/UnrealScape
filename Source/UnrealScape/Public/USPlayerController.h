@@ -53,7 +53,7 @@ public:
     void MoveAndInteract(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Interaction")
-    void InteractionComplete();
+    void InteractionComplete(AGameEntity* TargetEntity);
 
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();
