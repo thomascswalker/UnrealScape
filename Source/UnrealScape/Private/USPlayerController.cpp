@@ -93,7 +93,12 @@ void AUSPlayerController::Move(const FVector Location)
     {
         return;
     }
-    ControlledPawn->NavigatorComponent->NavigateToLocation(Location);
+    FNavigationRequest Request;
+    Request.End = Location;
+    if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
+    {
+        ControlledPawn->NavigatorComponent->Navigate(Request);
+    }
 }
 
 void AUSPlayerController::MoveAndInteract(const FVector Location)
@@ -114,13 +119,18 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
         return;
     }
 
-    if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
+    FNavigationRequest Request;
+    Request.End = Location;
+    if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
     {
-        ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
+        if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
+        {
+            ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
+        }
+        ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
+        TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
+        ControlledPawn->NavigatorComponent->Navigate(Request);
     }
-    ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
-    TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
-    ControlledPawn->NavigatorComponent->NavigateToLocation(Location);
 }
 
 void AUSPlayerController::InteractionComplete(AGameEntity* Entity)

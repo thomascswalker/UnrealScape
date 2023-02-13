@@ -82,14 +82,14 @@ void UNavigatorComponent::UpdateCurrentTile()
     }
 }
 
-void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
+void UNavigatorComponent::Navigate(const FNavigationRequest& Request)
 {
-    INFO(FString::Printf(L"Navigating to %s", *TargetTile.WorldPosition.ToString()));
     APawn* ControlledPawn = Cast<APawn>(GetOwner());
 
     if (bIsMoving)
     {
         Stopped.Broadcast();
+        bIsMoving = false;
     }
 
     Spline->ClearSplinePoints();
@@ -98,19 +98,8 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     UpdateCurrentTile();
 
     // Request Path
-    double StartTime = FPlatformTime::Seconds();
-    TArray<FTileInfo> Path = CurrentGrid->RequestPath(CurrentTile, TargetTile);
-    double EndTime = FPlatformTime::Seconds();
-    double Delta = EndTime - StartTime;
-    INFO(FString::Printf(L"Path generated in %f seconds", Delta));
-    if (Path.Num() == 0)
+    if (Request.Path.Num() == 0)
     {
-#ifdef UE_BUILD_DEBUG
-        WARNING(FString::Printf(L"No path found from %s to %s", *CurrentTile.WorldPosition.ToString(),
-                                *TargetTile.WorldPosition.ToString()));
-#endif
-        UPawnMovementComponent* MovementComponent =
-            Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
         return;
     }
 
@@ -127,7 +116,7 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     Spline->AddSplineWorldPoint(PawnLocation);
     int Count = Spline->GetNumberOfSplinePoints();
     Spline->SetSplinePointType(Count - 1, ESplinePointType::Linear);
-    for (FTileInfo& Tile : Path)
+    for (const FTileInfo& Tile : Request.Path)
     {
         Spline->AddSplineWorldPoint(Tile.WorldPosition);
         Count = Spline->GetNumberOfSplinePoints();
@@ -142,27 +131,32 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     bIsMoving = true;
 }
 
-void UNavigatorComponent::NavigateToLocation(const FVector Location)
+bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
 {
-    APawn* ControlledPawn = Cast<APawn>(GetOwner());
-    if (!ControlledPawn)
+    APawn* Pawn = Cast<APawn>(GetOwner());
+    if (!Pawn)
     {
-        return;
+        return false;
     }
 
     UpdateCurrentGrid();
-    TOptional<FTileInfo> PossibleTargetTile = CurrentGrid->GetTileInfoFromLocation(Location);
+    if (!CurrentGrid->IsWorldPositionValid(Request.End))
+    {
+        return false;
+    }
+
+    TOptional<FTileInfo> PossibleTargetTile = CurrentGrid->GetTileInfoFromLocation(Request.End);
     if (!PossibleTargetTile.IsSet())
     {
 #ifdef UE_BUILD_DEBUG
-        FATAL(FString::Printf(L"Tile at location %s not found", *Location.ToString()));
+        FATAL(FString::Printf(L"Tile at location %s not found", *Request.End.ToString()));
 #endif
-        return;
+        return false;
     }
 
     FTileInfo TargetTile = PossibleTargetTile.GetValue();
 
-    if (!CurrentGrid->IsWalkableLocation(Location))
+    if (!CurrentGrid->IsWalkableLocation(Request.End))
     {
         TArray<FTileInfo> Neighbors;
 
@@ -170,9 +164,9 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
         if (Neighbors.Num() == 0)
         {
 #ifdef UE_BUILD_DEBUG
-            WARNING(FString::Printf(L"Location %s has no valid neighbors", *Location.ToString()));
+            WARNING(FString::Printf(L"Location %s has no valid neighbors", *Request.End.ToString()));
 #endif
-            return;
+            return false;
         }
 
         FTileInfo ClosestNeighbor;
@@ -180,7 +174,7 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
 
         for (auto& Neighbor : Neighbors)
         {
-            float Distance = (ControlledPawn->GetActorLocation() - Neighbor.WorldPosition).Size2D();
+            float Distance = (GetActorFeet() - Neighbor.WorldPosition).Size2D();
             if (Distance < ClosestDistance)
             {
                 ClosestDistance = Distance;
@@ -190,11 +184,29 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
         TargetTile = ClosestNeighbor;
     }
 
-    if (!CurrentGrid->IsWorldPositionValid(Location))
+    if (bIsMoving)
     {
-        return;
+        Stopped.Broadcast();
     }
-    NavigateToTile(TargetTile);
+
+    Spline->ClearSplinePoints();
+
+    UpdateCurrentGrid();
+    UpdateCurrentTile();
+
+    // Request Path
+    TArray<FTileInfo> Path = CurrentGrid->RequestPath(CurrentTile, TargetTile);
+    if (Path.Num() == 0)
+    {
+#ifdef UE_BUILD_DEBUG
+        WARNING(FString::Printf(L"No path found from %s to %s", *CurrentTile.WorldPosition.ToString(),
+                                *TargetTile.WorldPosition.ToString()));
+#endif
+        return false;
+    }
+
+    Request.Path = Path;
+    return true;
 }
 
 void UNavigatorComponent::MoveActor()
