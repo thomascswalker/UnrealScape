@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "NavigatorComponent.h"
+#include "Engine/Public/VisualLogger/VisualLogger.h"
+
+DEFINE_LOG_CATEGORY(Navigation);
 
 // Sets default values for this component's properties
 // https://snorristurluson.github.io/ClickToMove/
@@ -14,7 +17,6 @@ UNavigatorComponent::UNavigatorComponent()
     // Create spline
     Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
     Spline->ClearSplinePoints();
-    Spline->bDrawDebug = false;
 }
 
 // Called when the game starts
@@ -50,6 +52,7 @@ void UNavigatorComponent::UpdateCurrentTile()
 
 void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
 {
+    INFO(FString::Printf(L"Navigating to %s", *TargetTile.WorldPosition.ToString()));
     APawn* ControlledPawn = Cast<APawn>(GetOwner());
 
     if (bIsMoving)
@@ -63,16 +66,22 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     UpdateCurrentTile();
 
     // Request Path
+    double StartTime = FPlatformTime::Seconds();
     TArray<FTileInfo> Path = CurrentGrid->RequestPath(CurrentTile, TargetTile);
+    double EndTime = FPlatformTime::Seconds();
+    double Delta = EndTime - StartTime;
+    INFO(FString::Printf(L"Path generated in %f seconds", Delta));
     if (Path.Num() == 0)
     {
 #ifdef UE_BUILD_DEBUG
-        WARNING(L"No path found.");
+        WARNING(FString::Printf(L"No path found from %s to %s", *CurrentTile.WorldPosition.ToString(),
+                                *TargetTile.WorldPosition.ToString()));
 #endif
+        UPawnMovementComponent* MovementComponent =
+            Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
         return;
     }
 
-    
     if (!ControlledPawn)
     {
 #ifdef UE_BUILD_DEBUG
@@ -98,12 +107,6 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     CurrentTime = 1.f;
     NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
 
-    // Initial rotation
-    FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PawnLocation, NextPoint);
-    Rotation.Pitch = 0.0;
-    Rotation.Roll = 0.0;
-    ControlledPawn->SetActorRotation(Rotation);
-
     bIsMoving = true;
 }
 
@@ -113,18 +116,17 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+    // Get current player location
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    bInsideBuilding = GetCurrentFloor() != EFloorLevel::Z0;
+
+    // If there's zero points, we can just return
     if (Spline->GetNumberOfSplinePoints() == 0)
     {
-        //Stopped.Broadcast();
         return;
     }
 
-    // Get current player location
-    APawn* ControlledPawn = Cast<APawn>(GetOwner());
-    if (!ControlledPawn)
-    {
-        return;
-    }
+    UPawnMovementComponent* MovementComponent = Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
     const FVector PlayerLocation = ControlledPawn->GetActorLocation();
 
     // Get distance to end
@@ -139,26 +141,24 @@ void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
         return;
     }
 
+    // Get the distance to the next point
     const float DistanceToNextPoint = (NextPoint - PlayerLocation).Size2D();
+
+    // If we're within the threshold to the next point, we'll update bump to the next point,
+    // update the current tile, and rotate the pawn
     if (DistanceToNextPoint <= DistanceThreshold)
     {
         CurrentTime += DistanceToNextPoint;
-        NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
+        NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::Local);
         UpdateCurrentTile();
 
-        // Rotate
-        FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, NextPoint);
-        Rotation.Pitch = 0.0;
-        Rotation.Roll = 0.0;
-        ControlledPawn->SetActorRotation(Rotation);
+        UE_VLOG(this, Navigation, Verbose, TEXT("Updated next point"));
     }
 
     if (ControlledPawn != nullptr)
     {
         FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
-
-        // Move
-        ControlledPawn->AddMovementInput(WorldDirection, MovementSpeed, true);
+        MovementComponent->RequestDirectMove(WorldDirection * MovementSpeed, false);
     }
 }
 
@@ -224,8 +224,8 @@ FVector UNavigatorComponent::GetMovementVector()
     TArray<AActor*> ActorsToIgnore;
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-        this, PawnLocation, PawnLocation + TraceOffset, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+        this, PawnLocation, PawnLocation + TraceOffset, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false,
+        ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
     if (!BlockingHit)
     {
         return FVector();
@@ -233,3 +233,51 @@ FVector UNavigatorComponent::GetMovementVector()
     FVector PawnTerrainLocation = HitResult.Location;
     return PawnTerrainLocation;
 }
+
+EFloorLevel UNavigatorComponent::GetCurrentFloor()
+{
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    TArray<AActor*> ActorsToIgnore;
+    FHitResult HitResult;
+    const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
+        GetWorld(), ControlledPawn->GetActorLocation(), ControlledPawn->GetActorLocation() + FVector(0, 0, 200),
+        UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::ForOneFrame,
+        HitResult, true, FColor::Red, FColor::Green);
+    if (BlockingHit)
+    {
+        for (FName Tag : HitResult.GetActor()->Tags)
+        {
+            INFO(*Tag.ToString());
+        }
+        if (HitResult.GetActor()->ActorHasTag("B0"))
+        {
+            return EFloorLevel::B0;
+        }
+        else if (HitResult.GetActor()->ActorHasTag("Z0"))
+        {
+            return EFloorLevel::Z0;
+        }
+        else if (HitResult.GetActor()->ActorHasTag("Z1"))
+        {
+            return EFloorLevel::Z1;
+        }
+        else if (HitResult.GetActor()->ActorHasTag("Z2"))
+        {
+            return EFloorLevel::Z2;
+        }
+    }
+    return EFloorLevel::Z0;
+}
+
+#if ENABLE_VISUAL_LOG
+void UNavigatorComponent::GrabDebugSnapshot(FVisualLogEntry* Snapshot) const
+{
+    IVisualLoggerDebugSnapshotInterface::GrabDebugSnapshot(Snapshot);
+    const int32 CatIndex = Snapshot->Status.AddZeroed();
+    FVisualLogStatusCategory& Category = Snapshot->Status[CatIndex];
+    Category.Category = TEXT("Navigation");
+    Category.Add(TEXT("Current Location"), *GetOwner()->GetActorLocation().ToString());
+    Category.Add(TEXT("Next Location"), *NextPoint.ToString());
+    Category.Add(TEXT("Goal Location"), *Goal.ToString());
+}
+#endif

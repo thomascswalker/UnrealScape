@@ -25,8 +25,7 @@ void AGrid::OnConstruction(const FTransform& Transform)
     if (bDrawDebugLines)
     {
         FVector HalfWorldSize = WorldSize / 2.f;
-        DrawDebugBox(World, GetActorLocation() + HalfWorldSize, HalfWorldSize, FColor::Red, false, 9999.f,
-                     0, 10.f);
+        DrawDebugBox(World, GetActorLocation() + HalfWorldSize, HalfWorldSize, FColor::Red, false, 9999.f, 0, 10.f);
     }
 
     Tiles.Empty();
@@ -62,7 +61,7 @@ void AGrid::ConstructTileActors()
             TileInfo.GridIndex.Y = Y;
 
             TileInfo.WorldPosition.X = SpawnLocation.X + (TileSize / 2.f) + Offset.X;
-            TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;  
+            TileInfo.WorldPosition.Y = SpawnLocation.Y + (TileSize / 2.f) + Offset.Y;
 
             FVector Start = TileInfo.WorldPosition + FVector(0, 0, Height);
             FVector End = TileInfo.WorldPosition - FVector(0, 0, Height);
@@ -79,14 +78,15 @@ void AGrid::ConstructTileActors()
                 TileInfo.WorldPosition.Z = HitResult.Location.Z;
             }
 
-            //if (bDrawDebugLines)
-            //{
-            //    DrawDebugPoint(World, TileInfo.WorldPosition, 25.f, FColor::Green, false, 9999.f, 0);
-            //}
-            //else
-            //{
-            //    FlushPersistentDebugLines(World);
-            //}
+            if (bDrawDebugLines)
+            {
+                FColor Color = BlockingHit ? FColor::Green : FColor::Red;
+                DrawDebugPoint(World, TileInfo.WorldPosition, 10.f, Color, false, 9999.f, 0);
+            }
+            else
+            {
+                FlushPersistentDebugLines(World);
+            }
 
             Tiles.Add(TileInfo);
         }
@@ -201,6 +201,37 @@ bool AGrid::IsWalkableGridIndex(const FVector2D GridIndex)
     return IsWalkableLocation(TileInfo.GetValue().WorldPosition);
 }
 
+bool AGrid::IsWalkableGridIndex(const FVector2D SourceIndex, const FVector2D TargetIndex)
+{
+    if (!IsWalkableGridIndex(TargetIndex))
+    {
+        return false;
+    }
+
+    TOptional<FTileInfo> SourceTileInfo = GetTileInfoFromGridIndex(SourceIndex);
+    if (!SourceTileInfo.IsSet())
+    {
+        return false;
+    }
+
+    TOptional<FTileInfo> TargetTileInfo = GetTileInfoFromGridIndex(TargetIndex);
+    if (!TargetTileInfo.IsSet())
+    {
+        return false;
+    }
+
+    FVector VerticalOffset(0, 0, 25);
+    FVector SourceLocation = SourceTileInfo.GetValue().WorldPosition + VerticalOffset;
+    FVector TargetLocation = TargetTileInfo.GetValue().WorldPosition + VerticalOffset;
+
+    FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(TeleportTrace), true, nullptr);
+
+    FHitResult Hit;
+    bool bHit =
+        GetWorld()->LineTraceSingleByChannel(Hit, SourceLocation, TargetLocation, COLLISION_OBSTACLE, TraceParams);
+    return !bHit;
+}
+
 void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors, bool bIncludeDiagonal)
 {
     /*
@@ -225,14 +256,15 @@ void AGrid::GetNeighbors(const FTileInfo& Tile, TArray<FTileInfo>& Neighbors, bo
     FVector2D WIndex = FVector2D(CX - 1.f, CY);
 
     // Trace neighbor walkability
-    bool bNWWalkable = IsWalkableGridIndex(NWIndex);
-    bool bNWalkable = IsWalkableGridIndex(NIndex);
-    bool bNEWalkable = IsWalkableGridIndex(NEIndex);
-    bool bEWalkable = IsWalkableGridIndex(EIndex);
-    bool bSEWalkable = IsWalkableGridIndex(SEIndex);
-    bool bSWalkable = IsWalkableGridIndex(SIndex);
-    bool bSWWalkable = IsWalkableGridIndex(SWIndex);
-    bool bWWalkable = IsWalkableGridIndex(WIndex);
+    bool bNWalkable = IsWalkableGridIndex(Tile.GridIndex, NIndex);
+    bool bEWalkable = IsWalkableGridIndex(Tile.GridIndex, EIndex);
+    bool bSWalkable = IsWalkableGridIndex(Tile.GridIndex, SIndex);
+    bool bWWalkable = IsWalkableGridIndex(Tile.GridIndex, WIndex);
+
+    bool bNWWalkable = IsWalkableGridIndex(Tile.GridIndex, NWIndex);
+    bool bNEWalkable = IsWalkableGridIndex(Tile.GridIndex, NEIndex);
+    bool bSEWalkable = IsWalkableGridIndex(Tile.GridIndex, SEIndex);
+    bool bSWWalkable = IsWalkableGridIndex(Tile.GridIndex, SWIndex);
 
     // [X][ ][ ]
     // [ ][O][ ]
@@ -372,11 +404,24 @@ TArray<FTileInfo> AGrid::Retrace(FTileInfo& Start, FTileInfo& End)
 
 TArray<FTileInfo> AGrid::RequestPath(const FTileInfo& Start, const FTileInfo& End)
 {
+    int MaxDistance = 600;
+    int MaxIterations = 10000;
+    int CurrentIteration = 0;
     TArray<FTileInfo> OpenSet{Start};
     TArray<FTileInfo> ClosedSet;
 
+    if (!IsWalkableGridIndex(Start.GridIndex) || !IsWalkableGridIndex(End.GridIndex))
+    {
+        return TArray<FTileInfo>();
+    }
+
     while (!OpenSet.IsEmpty())
     {
+        CurrentIteration++;
+        if (CurrentIteration > MaxIterations)
+        {
+            return TArray<FTileInfo>();
+        }
         // Get the cheapest node in the open set
         FTileInfo CurrentTile = OpenSet[0];
         for (FTileInfo& Tile : OpenSet)
