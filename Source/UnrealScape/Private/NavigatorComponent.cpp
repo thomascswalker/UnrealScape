@@ -25,6 +25,38 @@ void UNavigatorComponent::BeginPlay()
     Super::BeginPlay();
 }
 
+// Called every frame
+void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+                                        FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    // Get current player location
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    bInsideBuilding = GetFloorAbove() != EFloorLevel::Z0;
+
+    // If there's zero points, we can just return
+    if (Spline->GetNumberOfSplinePoints() == 0)
+    {
+        return;
+    }
+    // Otherwise we'll move the actor whatever the current direction along the path spline
+    MoveActor();
+}
+
+FVector UNavigatorComponent::GetActorFeet()
+{
+    APawn* Pawn = Cast<APawn>(GetOwner());
+    FVector Location = Pawn->GetActorLocation();
+    FVector TraceOffset(0, 0, -200);
+    TArray<AActor*> ActorsToIgnore;
+    FHitResult HitResult;
+    const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
+        this, Location, Location + TraceOffset, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false,
+        ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+    return HitResult.Location;
+}
+
 void UNavigatorComponent::UpdateCurrentGrid()
 {
     TArray<AActor*> Actors;
@@ -104,62 +136,10 @@ void UNavigatorComponent::NavigateToTile(const FTileInfo& TargetTile)
     }
     Length = Spline->GetSplineLength();
     Spline->Duration = Length;
-    CurrentTime = 1.f;
+    CurrentTime = 0.f;
     NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
 
     bIsMoving = true;
-}
-
-// Called every frame
-void UNavigatorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                        FActorComponentTickFunction* ThisTickFunction)
-{
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-    // Get current player location
-    APawn* ControlledPawn = Cast<APawn>(GetOwner());
-    bInsideBuilding = GetCurrentFloor() != EFloorLevel::Z0;
-
-    // If there's zero points, we can just return
-    if (Spline->GetNumberOfSplinePoints() == 0)
-    {
-        return;
-    }
-
-    UPawnMovementComponent* MovementComponent = Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
-    const FVector PlayerLocation = ControlledPawn->GetActorLocation();
-
-    // Get distance to end
-    float DistanceToGoal = (Goal - PlayerLocation).Size2D();
-
-    // If we're within the goal threshold, clear all points
-    if (DistanceToGoal <= GoalThreshold)
-    {
-        bIsMoving = false;
-        Spline->ClearSplinePoints();
-        ReachedDestination.Broadcast(ControlledPawn);
-        return;
-    }
-
-    // Get the distance to the next point
-    const float DistanceToNextPoint = (NextPoint - PlayerLocation).Size2D();
-
-    // If we're within the threshold to the next point, we'll update bump to the next point,
-    // update the current tile, and rotate the pawn
-    if (DistanceToNextPoint <= DistanceThreshold)
-    {
-        CurrentTime += DistanceToNextPoint;
-        NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::Local);
-        UpdateCurrentTile();
-
-        UE_VLOG(this, Navigation, Verbose, TEXT("Updated next point"));
-    }
-
-    if (ControlledPawn != nullptr)
-    {
-        FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
-        MovementComponent->RequestDirectMove(WorldDirection * MovementSpeed, false);
-    }
 }
 
 void UNavigatorComponent::NavigateToLocation(const FVector Location)
@@ -217,24 +197,57 @@ void UNavigatorComponent::NavigateToLocation(const FVector Location)
     NavigateToTile(TargetTile);
 }
 
-FVector UNavigatorComponent::GetMovementVector()
+void UNavigatorComponent::MoveActor()
 {
-    FVector PawnLocation = GetOwner()->GetActorLocation();
-
-    TArray<AActor*> ActorsToIgnore;
-    FHitResult HitResult;
-    const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-        this, PawnLocation, PawnLocation + TraceOffset, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false,
-        ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
-    if (!BlockingHit)
+    // Get current player location
+    APawn* ControlledPawn = Cast<APawn>(GetOwner());
+    if (!ControlledPawn)
     {
-        return FVector();
+        return;
     }
-    FVector PawnTerrainLocation = HitResult.Location;
-    return PawnTerrainLocation;
+
+    const FVector PlayerLocation = GetActorFeet();
+
+    // Get distance to end
+    float DistanceToGoal = (Goal - PlayerLocation).Size2D();
+
+    // If we're within the goal threshold, clear all points
+    if (DistanceToGoal <= GoalThreshold)
+    {
+        bIsMoving = false;
+        Spline->ClearSplinePoints();
+        ReachedDestination.Broadcast(ControlledPawn);
+        return;
+    }
+
+    // Get the distance to the next point
+    const float DistanceToNextPoint = (NextPoint - PlayerLocation).Size2D();
+
+    // If we're within the threshold to the next point, we'll update bump to the next point,
+    // update the current tile, and rotate the pawn
+    if (DistanceToNextPoint <= PointThreshold)
+    {
+        CurrentTime += CurrentGrid->TileSize;
+        NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
+        UpdateCurrentTile();
+
+        UE_VLOG(this, Navigation, Verbose, TEXT("Updated next point"));
+    }
+
+    FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
+
+#if ENABLE_VISUAL_LOG
+    UE_VLOG_LOCATION(this, Navigation, Verbose, PlayerLocation, 50.f, FColor::Red, TEXT("Current location"));
+    UE_VLOG_LOCATION(this, Navigation, Verbose, NextPoint, 50.f, FColor::Green, TEXT("Next point"));
+    UE_VLOG_ARROW(this, Navigation, Verbose, PlayerLocation, PlayerLocation + (WorldDirection * CurrentGrid->TileSize),
+                  FColor::Red, TEXT("Movement vector"));
+#endif
+
+    UPawnMovementComponent* MovementComponent = Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
+    MovementComponent->RequestDirectMove(WorldDirection * MovementSpeed, false);
 }
 
-EFloorLevel UNavigatorComponent::GetCurrentFloor()
+EFloorLevel UNavigatorComponent::GetFloorAbove()
 {
     APawn* ControlledPawn = Cast<APawn>(GetOwner());
     TArray<AActor*> ActorsToIgnore;
@@ -243,29 +256,27 @@ EFloorLevel UNavigatorComponent::GetCurrentFloor()
         GetWorld(), ControlledPawn->GetActorLocation(), ControlledPawn->GetActorLocation() + FVector(0, 0, 200),
         UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::ForOneFrame,
         HitResult, true, FColor::Red, FColor::Green);
-    if (BlockingHit)
+    if (!BlockingHit)
     {
-        for (FName Tag : HitResult.GetActor()->Tags)
-        {
-            INFO(*Tag.ToString());
-        }
-        if (HitResult.GetActor()->ActorHasTag("B0"))
-        {
-            return EFloorLevel::B0;
-        }
-        else if (HitResult.GetActor()->ActorHasTag("Z0"))
-        {
-            return EFloorLevel::Z0;
-        }
-        else if (HitResult.GetActor()->ActorHasTag("Z1"))
-        {
-            return EFloorLevel::Z1;
-        }
-        else if (HitResult.GetActor()->ActorHasTag("Z2"))
-        {
-            return EFloorLevel::Z2;
-        }
+        return EFloorLevel::Z0;
     }
+    if (HitResult.GetActor()->ActorHasTag("B0"))
+    {
+        return EFloorLevel::B0;
+    }
+    else if (HitResult.GetActor()->ActorHasTag("Z0"))
+    {
+        return EFloorLevel::Z0;
+    }
+    else if (HitResult.GetActor()->ActorHasTag("Z1"))
+    {
+        return EFloorLevel::Z1;
+    }
+    else if (HitResult.GetActor()->ActorHasTag("Z2"))
+    {
+        return EFloorLevel::Z2;
+    }
+
     return EFloorLevel::Z0;
 }
 
