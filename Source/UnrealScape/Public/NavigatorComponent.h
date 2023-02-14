@@ -106,10 +106,10 @@ public:
     void UpdateCurrentTile();
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    void NavigateToTile(const FTileInfo& TargetTile);
+    void Navigate(const FNavigationRequest& Request);
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
-    void NavigateToLocation(const FVector Location);
+    bool CanMoveToLocation(FNavigationRequest& Request);
 
     UFUNCTION(BlueprintCallable, Category = "Navigation")
     FVector GetActorFeet();

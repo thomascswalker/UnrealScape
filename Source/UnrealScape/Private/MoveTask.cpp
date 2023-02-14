@@ -26,7 +26,7 @@ void UMoveTask::Execute()
     Unbind();
     Bind();
 
-    Navigator->NavigateToLocation(Location);
+    //Navigator->NavigateToLocation(Location);
 }
 
 void UMoveTask::Bind()
