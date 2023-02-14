@@ -127,6 +127,10 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
         {
             ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
         }
+        if (TargetEntity->InteractionComplete.IsBound())
+        {
+            TargetEntity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
+        }
         ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
         TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
         ControlledPawn->NavigatorComponent->Navigate(Request);
