@@ -145,6 +145,11 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
         return false;
     }
 
+#if ENABLE_VISUAL_LOG
+    UE_VLOG_LOCATION(this, Navigation, Verbose, Request.End, 25.f, FColor::Yellow,
+                     TEXT("Target Location"));
+#endif
+
     TOptional<FTileInfo> PossibleTargetTile = CurrentGrid->GetTileInfoFromLocation(Request.End);
     if (!PossibleTargetTile.IsSet())
     {
@@ -155,6 +160,11 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
     }
 
     FTileInfo TargetTile = PossibleTargetTile.GetValue();
+#if ENABLE_VISUAL_LOG
+    UE_VLOG_LOCATION(this, Navigation, Verbose, TargetTile.WorldPosition, 50.f, FColor::Red,
+                     TEXT("Original Target Tile"));
+#endif
+
 
     if (!CurrentGrid->IsWalkableLocation(Request.End))
     {
@@ -174,6 +184,11 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
 
         for (auto& Neighbor : Neighbors)
         {
+#if ENABLE_VISUAL_LOG
+            UE_VLOG_LOCATION(this, Navigation, Verbose, Neighbor.WorldPosition, 50.f, FColor::Cyan,
+                             TEXT("Possible Target"));
+#endif
+
             float Distance = (GetActorFeet() - Neighbor.WorldPosition).Size2D();
             if (Distance < ClosestDistance)
             {
@@ -181,6 +196,11 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
                 ClosestNeighbor = Neighbor;
             }
         }
+
+#if ENABLE_VISUAL_LOG
+        UE_VLOG_LOCATION(this, Navigation, Verbose, ClosestNeighbor.WorldPosition, 50.f, FColor::Green,
+                         TEXT("Final Target"));
+#endif
         TargetTile = ClosestNeighbor;
     }
 
@@ -266,8 +286,8 @@ EFloorLevel UNavigatorComponent::GetFloorAbove()
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
         GetWorld(), ControlledPawn->GetActorLocation(), ControlledPawn->GetActorLocation() + FVector(0, 0, 200),
-        UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::None,
-        HitResult, true, FColor::Red, FColor::Green);
+        UEngineTypes::ConvertToTraceType(ECC_Visibility), false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true,
+        FColor::Red, FColor::Green);
     if (!BlockingHit)
     {
         return EFloorLevel::Z0;
