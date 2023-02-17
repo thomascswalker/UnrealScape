@@ -71,7 +71,17 @@ void AUSPlayerController::OnLeftClick()
         {
             return;
         }
-        MoveAndInteract(TargetEntity->GetActorLocation());
+        FVector Origin;
+        FVector BoxExtent;
+        TargetEntity->GetActorBounds(false, Origin, BoxExtent);
+
+        FVector Location = Origin;
+        Location.Z = Origin.Z - BoxExtent.Z;
+
+        // Offset towards the player
+        Location -= (Location - GetPawn()->GetActorLocation()).GetSafeNormal() * 25.f;
+
+        MoveAndInteract(Location);
     }
     // Otherwise if we've hit just normal terrain, we'll just move
     else if (LineTraceUnderMouseCursor(HitResult, COLLISION_TERRAIN))
@@ -94,7 +104,11 @@ void AUSPlayerController::Move(const FVector Location)
         return;
     }
     FNavigationRequest Request;
-    Request.End = Location;
+
+    // Offset a small amount towards to the player so we can account for positions right on the line
+    // between two tiles. Should be about 5 units in the direction of the player.
+    FVector Offset = (Location - ControlledPawn->GetActorLocation()).GetSafeNormal2D() * 5.f;
+    Request.End = Location - Offset;
     if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
     {
         ControlledPawn->NavigatorComponent->Navigate(Request);

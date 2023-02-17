@@ -5,14 +5,15 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
+#include "GameEntity.h"
 #include "GameFramework/PlayerController.h"
 #include "GameTaskComponent.h"
 #include "Grid.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "TaskExecutor.h"
 #include "Tile.h"
 #include "USCharacter.h"
-#include "GameEntity.h"
 
 #include "USPlayerController.generated.h"
 
