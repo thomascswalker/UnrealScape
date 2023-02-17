@@ -71,15 +71,11 @@ void AUSPlayerController::OnLeftClick()
         {
             return;
         }
-        FVector Origin;
-        FVector BoxExtent;
-        TargetEntity->GetActorBounds(false, Origin, BoxExtent);
-
-        FVector Location = Origin;
-        Location.Z = Origin.Z - BoxExtent.Z;
+        FVector Location = TargetEntity->GetFloor();
 
         // Offset towards the player
-        Location -= (Location - GetPawn()->GetActorLocation()).GetSafeNormal() * 25.f;
+        FVector Direction = (TargetEntity->GetActorLocation() - GetPawn()->GetActorLocation()).GetSafeNormal();
+        Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
 
         MoveAndInteract(Location);
     }

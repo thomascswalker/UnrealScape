@@ -25,7 +25,8 @@ public:
     EEntityType Type;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
-    float InteractDistance = 125.f; // Slightly more than one straight tile distance (111), but less than 1 diagonal distance (150)
+    float InteractDistance =
+        75.f;  // Slightly more than one straight tile distance (111), but less than 1 diagonal distance (150)
 
 protected:
     // Called when the game starts or when spawned
@@ -40,4 +41,7 @@ public:
 
     UFUNCTION(BlueprintNativeEvent)
     void Interact(AActor* Actor) override;
+
+    UFUNCTION(BlueprintNativeEvent)
+    FVector GetFloor() override;
 };
