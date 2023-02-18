@@ -22,11 +22,15 @@ public:
     // Sets default values for this actor's properties
     AGameEntity();
 
+    UPROPERTY(EditAnywhere, Category = "Interaction")
     EEntityType Type;
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
+    UPROPERTY(EditAnywhere, Category = "Interaction")
     float InteractDistance =
         75.f;  // Slightly more than one straight tile distance (111), but less than 1 diagonal distance (150)
+
+    UPROPERTY(EditAnywhere, Category = "Interaction")
+    TArray<FAction> Actions;
 
 protected:
     // Called when the game starts or when spawned
@@ -36,11 +40,13 @@ public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
+
+
     UPROPERTY(BlueprintCallable, Category = "Event Dispatchers")
     FInteractionComplete InteractionComplete;
 
     UFUNCTION(BlueprintNativeEvent)
-    void Interact(AActor* Actor) override;
+    void Interact(const FInteractRequest& Request) override;
 
     UFUNCTION(BlueprintNativeEvent)
     FVector GetFloor() override;

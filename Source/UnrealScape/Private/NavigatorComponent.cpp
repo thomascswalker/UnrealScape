@@ -248,7 +248,7 @@ void UNavigatorComponent::MoveActor()
     {
         bIsMoving = false;
         Spline->ClearSplinePoints();
-        ReachedDestination.Broadcast(ControlledPawn);
+        ReachedDestination.Broadcast();
         return;
     }
 

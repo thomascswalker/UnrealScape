@@ -31,8 +31,11 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
     UGameTaskComponent* GameTaskComponent;
 
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     AGameEntity* TargetEntity;
-    FDelegateHandle TargetEntityInteractHandle;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    FInteractRequest CurrentInteractionRequest;
 
     // Overrides
     virtual void Tick(float DeltaTime) override;
@@ -53,8 +56,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void MoveAndInteract(const FVector Location);
 
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void MovementComplete();
+
     UFUNCTION(BlueprintCallable, Category = "Interaction")
-    void InteractionComplete(AGameEntity* TargetEntity);
+    void InteractionComplete(AGameEntity* Entity);
 
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();

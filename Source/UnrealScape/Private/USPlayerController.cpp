@@ -71,6 +71,14 @@ void AUSPlayerController::OnLeftClick()
         {
             return;
         }
+
+        if (TargetEntity->Actions.Num() == 0)
+        {
+            INFO("Target has no actions!");
+            return;
+        }
+        CurrentInteractionRequest.Action = TargetEntity->Actions[0];
+
         FVector Location = TargetEntity->GetFloor();
 
         // Offset towards the player
@@ -125,7 +133,7 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
     float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
     if (Distance < TargetEntity->InteractDistance)
     {
-        TargetEntity->Interact(ControlledPawn);
+        TargetEntity->Interact(CurrentInteractionRequest);
         return;
     }
 
@@ -133,29 +141,22 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
     Request.End = Location;
     if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
     {
-        if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
-        {
-            ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
-        }
-        if (TargetEntity->InteractionComplete.IsBound())
-        {
-            TargetEntity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
-        }
-        ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
-        TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
+        ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(this, &AUSPlayerController::MovementComplete);
         ControlledPawn->NavigatorComponent->Navigate(Request);
     }
+}
+
+void AUSPlayerController::MovementComplete()
+{
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(this, &AUSPlayerController::MovementComplete);
+    TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
+    TargetEntity->Interact(CurrentInteractionRequest);
 }
 
 void AUSPlayerController::InteractionComplete(AGameEntity* Entity)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-    if (!ControlledPawn)
-    {
-        return;
-    }
-
-    ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(Entity, &AGameEntity::Interact);
     Entity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
 }
 

@@ -31,12 +31,12 @@ void UMoveTask::Execute()
 
 void UMoveTask::Bind()
 {
-    Navigator->ReachedDestination.AddDynamic(this, &UMoveTask::OnCompleted);
+    //Navigator->ReachedDestination.AddDynamic(this, &UMoveTask::OnCompleted);
     //Navigator->Stopped.AddDynamic(this, &UMoveTask::OnCancelled);
 }
 void UMoveTask::Unbind()
 {
-    Navigator->ReachedDestination.RemoveDynamic(this, &UMoveTask::OnCompleted);
+    //Navigator->ReachedDestination.RemoveDynamic(this, &UMoveTask::OnCompleted);
     //Navigator->Stopped.RemoveDynamic(this, &UMoveTask::OnCancelled);
 }
 

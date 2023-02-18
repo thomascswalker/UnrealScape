@@ -7,6 +7,29 @@
 
 #include "Interactive.generated.h"
 
+USTRUCT(BlueprintType)
+struct FAction
+{
+public:
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    FString Name;
+};
+
+USTRUCT(BlueprintType)
+struct FInteractRequest
+{
+public:
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
+    AActor* Instigator;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
+    FAction Action;
+};
+
 UENUM(BlueprintType)
 enum class EEntityType : uint8
 {
@@ -29,6 +52,6 @@ class UNREALSCAPE_API IInteractive
 
     // Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-    virtual void Interact(AActor* Actor) { return; }
+    virtual void Interact(const FInteractRequest& Request) { return; }
     virtual FVector GetFloor() { return FVector::Zero(); }
 };

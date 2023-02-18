@@ -14,7 +14,7 @@
 #include "NavigatorComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReachedDestinationSignature, AActor*, Actor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FReachedDestinationSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStoppedSignature);
 DECLARE_LOG_CATEGORY_EXTERN(Navigation, Log, All);
 
