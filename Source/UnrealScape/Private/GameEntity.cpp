@@ -21,8 +21,9 @@ void AGameEntity::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-void AGameEntity::Interact_Implementation(AActor* Actor)
+void AGameEntity::Interact_Implementation(const FInteractRequest& Request) {}
+
+FVector AGameEntity::GetFloor_Implementation()
 {
-    FString Message = FString::Printf(L"%s interacting with %s", *Actor->GetName(), *GetName());
-    INFO(Message);
+    return GetActorLocation();
 }

@@ -3,7 +3,7 @@
 #include "NavigatorComponent.h"
 #include "Engine/Public/VisualLogger/VisualLogger.h"
 
-DEFINE_LOG_CATEGORY(Navigation);
+DEFINE_LOG_CATEGORY(LogNavigation);
 
 // Sets default values for this component's properties
 // https://snorristurluson.github.io/ClickToMove/
@@ -52,8 +52,8 @@ FVector UNavigatorComponent::GetActorFeet()
     TArray<AActor*> ActorsToIgnore;
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-        this, Location, Location + TraceOffset, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false,
-        ActorsToIgnore, EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+        this, Location, Location + TraceOffset, UEngineTypes::ConvertToTraceType(ECC_Terrain), false, ActorsToIgnore,
+        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
     return HitResult.Location;
 }
 
@@ -146,8 +146,7 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
     }
 
 #if ENABLE_VISUAL_LOG
-    UE_VLOG_LOCATION(this, Navigation, Verbose, Request.End, 25.f, FColor::Yellow,
-                     TEXT("Target Location"));
+    UE_VLOG_LOCATION(this, LogNavigation, Verbose, Request.End, 25.f, FColor::Yellow, TEXT("Target Location"));
 #endif
 
     TOptional<FTileInfo> PossibleTargetTile = CurrentGrid->GetTileInfoFromLocation(Request.End);
@@ -161,10 +160,9 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
 
     FTileInfo TargetTile = PossibleTargetTile.GetValue();
 #if ENABLE_VISUAL_LOG
-    UE_VLOG_LOCATION(this, Navigation, Verbose, TargetTile.WorldPosition, 50.f, FColor::Red,
+    UE_VLOG_LOCATION(this, LogNavigation, Verbose, TargetTile.WorldPosition, 50.f, FColor::Red,
                      TEXT("Original Target Tile"));
 #endif
-
 
     if (!CurrentGrid->IsWalkableLocation(Request.End))
     {
@@ -185,7 +183,7 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
         for (auto& Neighbor : Neighbors)
         {
 #if ENABLE_VISUAL_LOG
-            UE_VLOG_LOCATION(this, Navigation, Verbose, Neighbor.WorldPosition, 50.f, FColor::Cyan,
+            UE_VLOG_LOCATION(this, LogNavigation, Verbose, Neighbor.WorldPosition, 50.f, FColor::Cyan,
                              TEXT("Possible Target"));
 #endif
 
@@ -198,7 +196,7 @@ bool UNavigatorComponent::CanMoveToLocation(FNavigationRequest& Request)
         }
 
 #if ENABLE_VISUAL_LOG
-        UE_VLOG_LOCATION(this, Navigation, Verbose, ClosestNeighbor.WorldPosition, 50.f, FColor::Green,
+        UE_VLOG_LOCATION(this, LogNavigation, Verbose, ClosestNeighbor.WorldPosition, 50.f, FColor::Green,
                          TEXT("Final Target"));
 #endif
         TargetTile = ClosestNeighbor;
@@ -248,7 +246,7 @@ void UNavigatorComponent::MoveActor()
     {
         bIsMoving = false;
         Spline->ClearSplinePoints();
-        ReachedDestination.Broadcast(ControlledPawn);
+        ReachedDestination.Broadcast();
         return;
     }
 
@@ -263,16 +261,16 @@ void UNavigatorComponent::MoveActor()
         NextPoint = Spline->GetLocationAtTime(CurrentTime, ESplineCoordinateSpace::World);
         UpdateCurrentTile();
 
-        UE_VLOG(this, Navigation, Verbose, TEXT("Updated next point"));
+        UE_VLOG(this, LogNavigation, Verbose, TEXT("Updated next point"));
     }
 
     FVector WorldDirection = (NextPoint - PlayerLocation).GetSafeNormal();
 
 #if ENABLE_VISUAL_LOG
-    UE_VLOG_LOCATION(this, Navigation, Verbose, PlayerLocation, 50.f, FColor::Red, TEXT("Current location"));
-    UE_VLOG_LOCATION(this, Navigation, Verbose, NextPoint, 50.f, FColor::Green, TEXT("Next point"));
-    UE_VLOG_ARROW(this, Navigation, Verbose, PlayerLocation, PlayerLocation + (WorldDirection * CurrentGrid->TileSize),
-                  FColor::Red, TEXT("Movement vector"));
+    UE_VLOG_LOCATION(this, LogNavigation, Verbose, PlayerLocation, 50.f, FColor::Red, TEXT("Current location"));
+    UE_VLOG_LOCATION(this, LogNavigation, Verbose, NextPoint, 50.f, FColor::Green, TEXT("Next point"));
+    UE_VLOG_ARROW(this, LogNavigation, Verbose, PlayerLocation,
+                  PlayerLocation + (WorldDirection * CurrentGrid->TileSize), FColor::Red, TEXT("Movement vector"));
 #endif
 
     UPawnMovementComponent* MovementComponent = Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());

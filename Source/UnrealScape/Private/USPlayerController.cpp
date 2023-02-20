@@ -21,9 +21,10 @@ void AUSPlayerController::SetupInputComponent()
     Super::SetupInputComponent();
 
     InputComponent->BindAction("LeftClick", IE_Released, this, &AUSPlayerController::OnLeftClick);
+    InputComponent->BindAction("RightClick", IE_Released, this, &AUSPlayerController::OnRightClick);
 }
 
-bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel)
+bool AUSPlayerController::SingleLineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel)
 {
     FVector WorldLocation;
     FVector WorldDirection;
@@ -38,11 +39,30 @@ bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, EColl
     FVector End = (WorldDirection * 10000.f) + Start;
 
     TArray<AActor*> ActorsToIgnore;
-    const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-        this, Start, End, UEngineTypes::ConvertToTraceType(CollisionChannel), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+    FCollisionQueryParams TraceParams;
+    const bool bBlockingHit =
+        GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, CollisionChannel, TraceParams);
+    return bBlockingHit;
+}
 
-    return BlockingHit;
+void AUSPlayerController::MultiLineTraceUnderMouseCursor(TArray<FHitResult>& HitResults,
+                                                         ECollisionChannel CollisionChannel)
+{
+    FVector WorldLocation;
+    FVector WorldDirection;
+    bool Result = DeprojectMousePositionToWorld(WorldLocation, WorldDirection);
+
+    if (!Result)
+    {
+        return;
+    }
+
+    FVector Start = WorldLocation;
+    FVector End = (WorldDirection * 10000.f) + Start;
+
+    TArray<AActor*> ActorsToIgnore;
+    FCollisionQueryParams TraceParams;
+    GetWorld()->LineTraceMultiByChannel(HitResults, Start, End, CollisionChannel, TraceParams);
 }
 
 UNavigatorComponent* AUSPlayerController::GetNavigatorComponent()
@@ -64,27 +84,28 @@ void AUSPlayerController::OnLeftClick()
     FHitResult HitResult;
 
     // If we hit an interactive object, move to it, then interact
-    if (LineTraceUnderMouseCursor(HitResult, COLLISION_INTERACTIVE))
+    SingleLineTraceUnderMouseCursor(HitResult, ECC_Interactive);
+    if (HitResult.bBlockingHit)
     {
         TargetEntity = Cast<AGameEntity>(HitResult.GetActor());
         if (!TargetEntity)
         {
             return;
         }
-        FVector Origin;
-        FVector BoxExtent;
-        TargetEntity->GetActorBounds(false, Origin, BoxExtent);
 
-        FVector Location = Origin;
-        Location.Z = Origin.Z - BoxExtent.Z;
+        if (TargetEntity->Actions.Num() == 0)
+        {
+            INFO("Target has no actions!");
+            return;
+        }
 
-        // Offset towards the player
-        Location -= (Location - GetPawn()->GetActorLocation()).GetSafeNormal() * 25.f;
-
-        MoveAndInteract(Location);
+        MoveAndInteract(TargetEntity, TargetEntity->Actions[0]);
+        return;
     }
+
     // Otherwise if we've hit just normal terrain, we'll just move
-    else if (LineTraceUnderMouseCursor(HitResult, COLLISION_TERRAIN))
+    SingleLineTraceUnderMouseCursor(HitResult, ECC_Terrain);
+    if (HitResult.bBlockingHit)
     {
         TargetEntity = nullptr;
         FVector Location = HitResult.Location;
@@ -93,6 +114,41 @@ void AUSPlayerController::OnLeftClick()
     else
     {
         TargetEntity = nullptr;
+    }
+}
+
+void AUSPlayerController::OnRightClick()
+{
+    TArray<FHitResult> HitResults;
+    TArray<FContextMenuRequest> Requests;
+
+    MultiLineTraceUnderMouseCursor(HitResults, ECC_Interactive);
+    for (const FHitResult& Result : HitResults)
+    {
+        AGameEntity* Entity = Cast<AGameEntity>(Result.GetActor());
+        if (!Entity)
+        {
+            continue;
+        }
+
+        if (Entity->Actions.Num() == 0)
+        {
+            continue;
+        }
+
+        FContextMenuRequest Request;
+        Request.Entity = Entity;
+
+        for (FAction& Action : Entity->Actions)
+        {
+            Request.Actions.Add(Action);
+        }
+        Requests.Add(Request);
+    }
+
+    if (Requests.Num() > 0)
+    {
+        ContextMenuRequested(Requests);
     }
 }
 
@@ -115,7 +171,7 @@ void AUSPlayerController::Move(const FVector Location)
     }
 }
 
-void AUSPlayerController::MoveAndInteract(const FVector Location)
+void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FAction& Action)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
@@ -123,13 +179,24 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
         return;
     }
 
+    FVector Location = TargetEntity->GetFloor();
+
+    // Offset towards the player
+    FVector Direction = (TargetEntity->GetActorLocation() - GetPawn()->GetActorLocation()).GetSafeNormal();
+    Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
+
+
+    CurrentInteractionRequest.Action = Action;
+
+
     ControlledPawn->NavigatorComponent->UpdateCurrentGrid();
     ControlledPawn->NavigatorComponent->UpdateCurrentTile();
 
     float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
-    if (Distance < TargetEntity->InteractDistance)
+    bool bCloseEnough = Distance < TargetEntity->InteractDistance;
+    if (bCloseEnough || Action.bUseInteractionDistance == false)
     {
-        TargetEntity->Interact(ControlledPawn);
+        TargetEntity->Interact(CurrentInteractionRequest);
         return;
     }
 
@@ -137,29 +204,22 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
     Request.End = Location;
     if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
     {
-        if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
-        {
-            ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
-        }
-        if (TargetEntity->InteractionComplete.IsBound())
-        {
-            TargetEntity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
-        }
-        ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(TargetEntity, &AGameEntity::Interact);
-        TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
+        ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(this, &AUSPlayerController::MovementComplete);
         ControlledPawn->NavigatorComponent->Navigate(Request);
     }
+}
+
+void AUSPlayerController::MovementComplete()
+{
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(this, &AUSPlayerController::MovementComplete);
+    TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
+    TargetEntity->Interact(CurrentInteractionRequest);
 }
 
 void AUSPlayerController::InteractionComplete(AGameEntity* Entity)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-    if (!ControlledPawn)
-    {
-        return;
-    }
-
-    ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(Entity, &AGameEntity::Interact);
     Entity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
 }
 
@@ -187,3 +247,5 @@ void AUSPlayerController::UpdateFloorVisibility()
         Actor->SetActorHiddenInGame(bInsideBuilding);
     }
 }
+
+void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<FContextMenuRequest>& Requests) {}

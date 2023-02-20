@@ -17,6 +17,19 @@
 
 #include "USPlayerController.generated.h"
 
+USTRUCT(BlueprintType)
+struct FContextMenuRequest
+{
+public:
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, Category = "Interaction")
+    AGameEntity* Entity;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Interaction")
+    TArray<FAction> Actions;
+};
+
 /**
  * 
  */
@@ -31,8 +44,11 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
     UGameTaskComponent* GameTaskComponent;
 
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     AGameEntity* TargetEntity;
-    FDelegateHandle TargetEntityInteractHandle;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    FInteractRequest CurrentInteractionRequest;
 
     // Overrides
     virtual void Tick(float DeltaTime) override;
@@ -40,7 +56,10 @@ public:
 
     // Methods
     UFUNCTION(BlueprintCallable, Category = "Utility")
-    bool LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
+    bool SingleLineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
+
+    UFUNCTION(BlueprintCallable, Category = "Utility")
+    void MultiLineTraceUnderMouseCursor(TArray<FHitResult>& HitResults, ECollisionChannel CollisionChannel);
 
     UNavigatorComponent* GetNavigatorComponent() override;
 
@@ -48,13 +67,22 @@ public:
     void OnLeftClick();
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
+    void OnRightClick();
+
+    UFUNCTION(BlueprintNativeEvent, Category = "Actions")
+    void ContextMenuRequested(const TArray<FContextMenuRequest>& Requests);
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
-    void MoveAndInteract(const FVector Location);
+    void MoveAndInteract(const AGameEntity* Entity, const FAction& Action);
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void MovementComplete();
 
     UFUNCTION(BlueprintCallable, Category = "Interaction")
-    void InteractionComplete(AGameEntity* TargetEntity);
+    void InteractionComplete(AGameEntity* Entity);
 
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();
