@@ -17,6 +17,19 @@
 
 #include "USPlayerController.generated.h"
 
+USTRUCT(BlueprintType)
+struct FContextMenuRequest
+{
+public:
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, Category = "Interaction")
+    AGameEntity* Entity;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Interaction")
+    TArray<FAction> Actions;
+};
+
 /**
  * 
  */
@@ -43,12 +56,21 @@ public:
 
     // Methods
     UFUNCTION(BlueprintCallable, Category = "Utility")
-    bool LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
+    bool SingleLineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel);
+
+    UFUNCTION(BlueprintCallable, Category = "Utility")
+    void MultiLineTraceUnderMouseCursor(TArray<FHitResult>& HitResults, ECollisionChannel CollisionChannel);
 
     UNavigatorComponent* GetNavigatorComponent() override;
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void OnLeftClick();
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void OnRightClick();
+
+    UFUNCTION(BlueprintNativeEvent, Category = "Actions")
+    void ContextMenuRequested(const TArray<FContextMenuRequest>& Requests);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);

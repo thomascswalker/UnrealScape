@@ -69,7 +69,7 @@ void AGrid::ConstructTileActors()
             TArray<AActor*> ActorsToIgnore;
             FHitResult HitResult;
             const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-                World, Start, End, UEngineTypes::ConvertToTraceType(COLLISION_TERRAIN), false, ActorsToIgnore,
+                World, Start, End, UEngineTypes::ConvertToTraceType(ECC_Terrain), false, ActorsToIgnore,
                 EDrawDebugTrace::None, HitResult, true);
 
             if (BlockingHit)
@@ -180,7 +180,7 @@ inline bool AGrid::IsWalkableLocation(const FVector& Location)
     TArray<AActor*> ActorsToIgnore;
     FHitResult HitResult;
     const bool BlockingHit = UKismetSystemLibrary::SphereTraceSingle(
-        this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(COLLISION_OBSTACLE), false, ActorsToIgnore,
+        this, Start, End, 25.f, UEngineTypes::ConvertToTraceType(ECC_Obstacle), false, ActorsToIgnore,
         EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 2.f);
 
     return !BlockingHit;
@@ -228,7 +228,7 @@ bool AGrid::IsWalkableGridIndex(const FVector2D SourceIndex, const FVector2D Tar
 
     FHitResult Hit;
     bool bHit =
-        GetWorld()->LineTraceSingleByChannel(Hit, SourceLocation, TargetLocation, COLLISION_OBSTACLE, TraceParams);
+        GetWorld()->LineTraceSingleByChannel(Hit, SourceLocation, TargetLocation, ECC_Obstacle, TraceParams);
     return !bHit;
 }
 

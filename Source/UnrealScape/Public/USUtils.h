@@ -24,6 +24,6 @@
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, \
                                      FString(__FUNCTION__) + "(" + FString::FromInt(__LINE__) + ") " + Message);
 
-#define COLLISION_OBSTACLE ECollisionChannel::ECC_GameTraceChannel1
-#define COLLISION_TERRAIN ECollisionChannel::ECC_GameTraceChannel2
-#define COLLISION_INTERACTIVE ECollisionChannel::ECC_GameTraceChannel3
+#define ECC_Obstacle ECollisionChannel::ECC_GameTraceChannel1
+#define ECC_Terrain ECollisionChannel::ECC_GameTraceChannel2
+#define ECC_Interactive ECollisionChannel::ECC_GameTraceChannel3

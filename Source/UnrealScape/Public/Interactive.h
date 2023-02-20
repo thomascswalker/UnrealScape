@@ -15,6 +15,9 @@ public:
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     FString Name;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    bool bUseInteractionDistance = true;
 };
 
 USTRUCT(BlueprintType)
@@ -23,10 +26,10 @@ struct FInteractRequest
 public:
     GENERATED_BODY()
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Interaction")
     AActor* Instigator;
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interaction")
+    UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Interaction")
     FAction Action;
 };
 

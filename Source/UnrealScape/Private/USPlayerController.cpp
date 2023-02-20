@@ -21,9 +21,10 @@ void AUSPlayerController::SetupInputComponent()
     Super::SetupInputComponent();
 
     InputComponent->BindAction("LeftClick", IE_Released, this, &AUSPlayerController::OnLeftClick);
+    InputComponent->BindAction("RightClick", IE_Released, this, &AUSPlayerController::OnRightClick);
 }
 
-bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel)
+bool AUSPlayerController::SingleLineTraceUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel)
 {
     FVector WorldLocation;
     FVector WorldDirection;
@@ -38,11 +39,30 @@ bool AUSPlayerController::LineTraceUnderMouseCursor(FHitResult& HitResult, EColl
     FVector End = (WorldDirection * 10000.f) + Start;
 
     TArray<AActor*> ActorsToIgnore;
-    const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-        this, Start, End, UEngineTypes::ConvertToTraceType(CollisionChannel), false, ActorsToIgnore,
-        EDrawDebugTrace::None, HitResult, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+    FCollisionQueryParams TraceParams;
+    const bool bBlockingHit =
+        GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, CollisionChannel, TraceParams);
+    return bBlockingHit;
+}
 
-    return BlockingHit;
+void AUSPlayerController::MultiLineTraceUnderMouseCursor(TArray<FHitResult>& HitResults,
+                                                         ECollisionChannel CollisionChannel)
+{
+    FVector WorldLocation;
+    FVector WorldDirection;
+    bool Result = DeprojectMousePositionToWorld(WorldLocation, WorldDirection);
+
+    if (!Result)
+    {
+        return;
+    }
+
+    FVector Start = WorldLocation;
+    FVector End = (WorldDirection * 10000.f) + Start;
+
+    TArray<AActor*> ActorsToIgnore;
+    FCollisionQueryParams TraceParams;
+    GetWorld()->LineTraceMultiByChannel(HitResults, Start, End, CollisionChannel, TraceParams);
 }
 
 UNavigatorComponent* AUSPlayerController::GetNavigatorComponent()
@@ -64,7 +84,8 @@ void AUSPlayerController::OnLeftClick()
     FHitResult HitResult;
 
     // If we hit an interactive object, move to it, then interact
-    if (LineTraceUnderMouseCursor(HitResult, COLLISION_INTERACTIVE))
+    SingleLineTraceUnderMouseCursor(HitResult, ECC_Interactive);
+    if (HitResult.bBlockingHit)
     {
         TargetEntity = Cast<AGameEntity>(HitResult.GetActor());
         if (!TargetEntity)
@@ -86,9 +107,12 @@ void AUSPlayerController::OnLeftClick()
         Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
 
         MoveAndInteract(Location);
+        return;
     }
+
     // Otherwise if we've hit just normal terrain, we'll just move
-    else if (LineTraceUnderMouseCursor(HitResult, COLLISION_TERRAIN))
+    SingleLineTraceUnderMouseCursor(HitResult, ECC_Terrain);
+    if (HitResult.bBlockingHit)
     {
         TargetEntity = nullptr;
         FVector Location = HitResult.Location;
@@ -97,6 +121,41 @@ void AUSPlayerController::OnLeftClick()
     else
     {
         TargetEntity = nullptr;
+    }
+}
+
+void AUSPlayerController::OnRightClick()
+{
+    TArray<FHitResult> HitResults;
+    TArray<FContextMenuRequest> Requests;
+
+    MultiLineTraceUnderMouseCursor(HitResults, ECC_Interactive);
+    for (const FHitResult& Result : HitResults)
+    {
+        AGameEntity* Entity = Cast<AGameEntity>(Result.GetActor());
+        if (!Entity)
+        {
+            continue;
+        }
+
+        if (Entity->Actions.Num() == 0)
+        {
+            continue;
+        }
+
+        FContextMenuRequest Request;
+        Request.Entity = Entity;
+
+        for (FAction& Action : Entity->Actions)
+        {
+            Request.Actions.Add(Action);
+        }
+        Requests.Add(Request);
+    }
+
+    if (Requests.Num() > 0)
+    {
+        ContextMenuRequested(Requests);
     }
 }
 
@@ -184,3 +243,5 @@ void AUSPlayerController::UpdateFloorVisibility()
         Actor->SetActorHiddenInGame(bInsideBuilding);
     }
 }
+
+void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<FContextMenuRequest>& Requests) {}
