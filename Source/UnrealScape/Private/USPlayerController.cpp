@@ -98,15 +98,8 @@ void AUSPlayerController::OnLeftClick()
             INFO("Target has no actions!");
             return;
         }
-        CurrentInteractionRequest.Action = TargetEntity->Actions[0];
 
-        FVector Location = TargetEntity->GetFloor();
-
-        // Offset towards the player
-        FVector Direction = (TargetEntity->GetActorLocation() - GetPawn()->GetActorLocation()).GetSafeNormal();
-        Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
-
-        MoveAndInteract(Location);
+        MoveAndInteract(TargetEntity, TargetEntity->Actions[0]);
         return;
     }
 
@@ -178,7 +171,7 @@ void AUSPlayerController::Move(const FVector Location)
     }
 }
 
-void AUSPlayerController::MoveAndInteract(const FVector Location)
+void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FAction& Action)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
@@ -186,11 +179,22 @@ void AUSPlayerController::MoveAndInteract(const FVector Location)
         return;
     }
 
+    FVector Location = TargetEntity->GetFloor();
+
+    // Offset towards the player
+    FVector Direction = (TargetEntity->GetActorLocation() - GetPawn()->GetActorLocation()).GetSafeNormal();
+    Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
+
+
+    CurrentInteractionRequest.Action = Action;
+
+
     ControlledPawn->NavigatorComponent->UpdateCurrentGrid();
     ControlledPawn->NavigatorComponent->UpdateCurrentTile();
 
     float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
-    if (Distance < TargetEntity->InteractDistance)
+    bool bCloseEnough = Distance < TargetEntity->InteractDistance;
+    if (bCloseEnough || Action.bUseInteractionDistance == false)
     {
         TargetEntity->Interact(CurrentInteractionRequest);
         return;

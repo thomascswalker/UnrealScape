@@ -76,7 +76,7 @@ public:
     void Move(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
-    void MoveAndInteract(const FVector Location);
+    void MoveAndInteract(const AGameEntity* Entity, const FAction& Action);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void MovementComplete();

@@ -45,9 +45,9 @@ public:
     UPROPERTY(EditAnywhere, Category = "Interaction")
     TArray<FAction> Actions;
 
-    UFUNCTION(BlueprintNativeEvent)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     void Interact(const FInteractRequest& Request) override;
 
-    UFUNCTION(BlueprintNativeEvent)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FVector GetFloor() override;
 };
