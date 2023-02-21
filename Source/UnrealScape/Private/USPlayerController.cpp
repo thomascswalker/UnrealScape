@@ -6,9 +6,6 @@ AUSPlayerController::AUSPlayerController()
 {
     bShowMouseCursor = true;
     bAttachToPawn = true;
-
-    GameTaskComponent = CreateDefaultSubobject<UGameTaskComponent>(TEXT("GameTaskComponent"));
-    AddOwnedComponent(GameTaskComponent);
 }
 
 void AUSPlayerController::Tick(float DeltaTime)
@@ -65,20 +62,6 @@ void AUSPlayerController::MultiLineTraceUnderMouseCursor(TArray<FHitResult>& Hit
     GetWorld()->LineTraceMultiByChannel(HitResults, Start, End, CollisionChannel, TraceParams);
 }
 
-UNavigatorComponent* AUSPlayerController::GetNavigatorComponent()
-
-{
-    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-    if (ControlledPawn == nullptr)
-    {
-#ifdef UE_BUILD_DEBUG
-        FATAL(L"Failed to get NavigatorComponent.");
-#endif
-        return nullptr;
-    }
-    return ControlledPawn->NavigatorComponent;
-}
-
 void AUSPlayerController::OnLeftClick()
 {
     FHitResult HitResult;
@@ -93,13 +76,13 @@ void AUSPlayerController::OnLeftClick()
             return;
         }
 
-        if (TargetEntity->Actions.Num() == 0)
+        if (TargetEntity->GetOptions().Num() == 0)
         {
-            INFO("Target has no actions!");
+            INFO("Target has no options!");
             return;
         }
 
-        MoveAndInteract(TargetEntity, TargetEntity->Actions[0]);
+        MoveAndInteract(TargetEntity, TargetEntity->GetOptions()[0]);
         return;
     }
 
@@ -120,7 +103,7 @@ void AUSPlayerController::OnLeftClick()
 void AUSPlayerController::OnRightClick()
 {
     TArray<FHitResult> HitResults;
-    TArray<FContextMenuRequest> Requests;
+    TArray<AGameEntity*> Entities;
 
     MultiLineTraceUnderMouseCursor(HitResults, ECC_Interactive);
     for (const FHitResult& Result : HitResults)
@@ -131,24 +114,17 @@ void AUSPlayerController::OnRightClick()
             continue;
         }
 
-        if (Entity->Actions.Num() == 0)
+        if (Entity->GetOptions().Num() == 0)
         {
             continue;
         }
 
-        FContextMenuRequest Request;
-        Request.Entity = Entity;
-
-        for (FAction& Action : Entity->Actions)
-        {
-            Request.Actions.Add(Action);
-        }
-        Requests.Add(Request);
+        Entities.Add(Entity);
     }
 
-    if (Requests.Num() > 0)
+    if (Entities.Num() > 0)
     {
-        ContextMenuRequested(Requests);
+        ContextMenuRequested(Entities);
     }
 }
 
@@ -171,12 +147,22 @@ void AUSPlayerController::Move(const FVector Location)
     }
 }
 
-void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FAction& Action)
+void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FOption& Option)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
     {
         return;
+    }
+
+    if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
+    {
+        ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
+    }
+
+    if (TargetEntity->InteractionComplete.IsBound())
+    {
+        TargetEntity->InteractionComplete.Clear();
     }
 
     FVector Location = TargetEntity->GetFloor();
@@ -185,18 +171,14 @@ void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FActi
     FVector Direction = (TargetEntity->GetActorLocation() - GetPawn()->GetActorLocation()).GetSafeNormal();
     Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
 
-
-    CurrentInteractionRequest.Action = Action;
-
-
     ControlledPawn->NavigatorComponent->UpdateCurrentGrid();
     ControlledPawn->NavigatorComponent->UpdateCurrentTile();
 
     float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
     bool bCloseEnough = Distance < TargetEntity->InteractDistance;
-    if (bCloseEnough || Action.bUseInteractionDistance == false)
+    if (bCloseEnough || Option.bUseInteractionDistance == false)
     {
-        TargetEntity->Interact(CurrentInteractionRequest);
+        TargetEntity->Interact(Option);
         return;
     }
 
@@ -204,6 +186,10 @@ void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FActi
     Request.End = Location;
     if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
     {
+        if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
+        {
+            ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
+        }
         ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(this, &AUSPlayerController::MovementComplete);
         ControlledPawn->NavigatorComponent->Navigate(Request);
     }
@@ -213,8 +199,15 @@ void AUSPlayerController::MovementComplete()
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(this, &AUSPlayerController::MovementComplete);
+
+    if (TargetEntity->InteractionComplete.IsBound())
+    {
+        TargetEntity->InteractionComplete.Clear();
+    }
     TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
-    TargetEntity->Interact(CurrentInteractionRequest);
+
+    // TODO: Update this!
+    TargetEntity->Interact(TargetEntity->GetOptions()[0]);
 }
 
 void AUSPlayerController::InteractionComplete(AGameEntity* Entity)
@@ -248,4 +241,4 @@ void AUSPlayerController::UpdateFloorVisibility()
     }
 }
 
-void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<FContextMenuRequest>& Requests) {}
+void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<AGameEntity*>& Entities) {}

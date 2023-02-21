@@ -11,7 +11,16 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"CoreUObject",
-				"UMG"
+				"UMG",
+				"BlueprintGraph"
+			]
+		},
+		{
+			"Name": "BlueprintNodes",
+			"Type": "UncookedOnly",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"BlueprintGraph"
 			]
 		}
 	],
