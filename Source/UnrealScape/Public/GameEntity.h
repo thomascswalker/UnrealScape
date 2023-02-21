@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interactive.h"
+#include "Kismet/GameplayStatics.h"
 #include "USUtils.h"
 
 #include "GameEntity.generated.h"
@@ -17,6 +18,15 @@ UCLASS()
 class UNREALSCAPE_API AGameEntity : public AActor, public IInteractive
 {
     GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+    FString Name;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+    EEntityType Type;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+    TArray<FOption> Options;
 
 public:
     // Sets default values for this actor's properties
@@ -36,18 +46,24 @@ public:
     UPROPERTY(BlueprintCallable, Category = "Event Dispatchers")
     FInteractionComplete InteractionComplete;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    FString DisplayName;
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    EEntityType Type;
-
-    UPROPERTY(EditAnywhere, Category = "Interaction")
-    TArray<FAction> Actions;
-
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-    void Interact(const FInteractRequest& Request) override;
+    void Interact(const FOption& Option) override;
 
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
     FVector GetFloor() override;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
+    APlayerController* GetPlayer() override;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
+    FString GetName() override;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
+    EEntityType GetType() override;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
+    TArray<FOption> GetOptions() override;
+
+    UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="OldName,NewName"))
+    void SetOptionName(const FString& OldName, const FString& NewName);
 };

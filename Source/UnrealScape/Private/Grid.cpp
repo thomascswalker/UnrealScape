@@ -68,10 +68,9 @@ void AGrid::ConstructTileActors()
 
             TArray<AActor*> ActorsToIgnore;
             FHitResult HitResult;
-            const bool BlockingHit = UKismetSystemLibrary::LineTraceSingle(
-                World, Start, End, UEngineTypes::ConvertToTraceType(ECC_Terrain), false, ActorsToIgnore,
-                EDrawDebugTrace::None, HitResult, true);
 
+            FCollisionQueryParams TraceParams;
+            const bool BlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Terrain, TraceParams);
             if (BlockingHit)
             {
                 INFO(FString::FromInt(HitResult.Location.Z));

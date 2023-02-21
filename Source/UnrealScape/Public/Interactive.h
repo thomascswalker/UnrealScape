@@ -8,7 +8,7 @@
 #include "Interactive.generated.h"
 
 USTRUCT(BlueprintType)
-struct FAction
+struct FOption
 {
 public:
     GENERATED_BODY()
@@ -27,10 +27,10 @@ public:
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Interaction")
-    AActor* Instigator;
+    AActor* Player;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Interaction")
-    FAction Action;
+    FOption Option;
 };
 
 UENUM(BlueprintType)
@@ -53,8 +53,14 @@ class UNREALSCAPE_API IInteractive
 {
     GENERATED_BODY()
 
-    // Add interface functions to this class. This is the class that will be inherited to implement this interface.
+    TArray<FOption> DefaultOptions;
+
 public:
-    virtual void Interact(const FInteractRequest& Request) { return; }
+    virtual void Interact(const FOption& Option) { return; }
     virtual FVector GetFloor() { return FVector::Zero(); }
+
+    virtual APlayerController* GetPlayer() { return nullptr; }
+    virtual FString GetName() { return FString(); }
+    virtual EEntityType GetType() { return EEntityType::Object; }
+    virtual TArray<FOption> GetOptions() { return DefaultOptions; }
 };

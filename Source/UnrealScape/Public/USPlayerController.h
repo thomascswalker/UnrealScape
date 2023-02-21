@@ -7,42 +7,21 @@
 #include "CoreMinimal.h"
 #include "GameEntity.h"
 #include "GameFramework/PlayerController.h"
-#include "GameTaskComponent.h"
 #include "Grid.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "TaskExecutor.h"
 #include "Tile.h"
 #include "USCharacter.h"
 
 #include "USPlayerController.generated.h"
 
-USTRUCT(BlueprintType)
-struct FContextMenuRequest
-{
-public:
-    GENERATED_BODY()
-
-    UPROPERTY(BlueprintReadWrite, Category = "Interaction")
-    AGameEntity* Entity;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Interaction")
-    TArray<FAction> Actions;
-};
-
-/**
- * 
- */
 UCLASS()
-class UNREALSCAPE_API AUSPlayerController : public APlayerController, public ITaskExecutor
+class UNREALSCAPE_API AUSPlayerController : public APlayerController
 {
     GENERATED_BODY()
 
 public:
     AUSPlayerController();
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
-    UGameTaskComponent* GameTaskComponent;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     AGameEntity* TargetEntity;
@@ -61,8 +40,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Utility")
     void MultiLineTraceUnderMouseCursor(TArray<FHitResult>& HitResults, ECollisionChannel CollisionChannel);
 
-    UNavigatorComponent* GetNavigatorComponent() override;
-
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void OnLeftClick();
 
@@ -70,13 +47,13 @@ public:
     void OnRightClick();
 
     UFUNCTION(BlueprintNativeEvent, Category = "Actions")
-    void ContextMenuRequested(const TArray<FContextMenuRequest>& Requests);
+    void ContextMenuRequested(const TArray<AGameEntity*>& Entities);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
-    void MoveAndInteract(const AGameEntity* Entity, const FAction& Action);
+    void MoveAndInteract(const AGameEntity* Entity, const FOption& Option);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void MovementComplete();
