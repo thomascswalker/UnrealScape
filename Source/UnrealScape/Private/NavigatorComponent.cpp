@@ -3,7 +3,9 @@
 #include "NavigatorComponent.h"
 #include "Engine/Public/VisualLogger/VisualLogger.h"
 
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 DEFINE_LOG_CATEGORY(LogNavigation);
+#endif
 
 // Sets default values for this component's properties
 // https://snorristurluson.github.io/ClickToMove/

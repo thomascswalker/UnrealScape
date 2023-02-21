@@ -10,6 +10,6 @@ public class UnrealScapeEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-        ExtraModuleNames.AddRange(new string[] { "UnrealScape", "BlueprintNodes" });
+        ExtraModuleNames.AddRange(new string[] { "UnrealScape" });
     }
 }
