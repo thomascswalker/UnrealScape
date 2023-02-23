@@ -6,6 +6,9 @@ AUSPlayerController::AUSPlayerController()
 {
     bShowMouseCursor = true;
     bAttachToPawn = true;
+
+    DialogInterpreterComponent = CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
+    AddOwnedComponent(DialogInterpreterComponent);
 }
 
 void AUSPlayerController::Tick(float DeltaTime)

@@ -5,6 +5,7 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
+#include "DialogInterpreterComponent.h"
 #include "GameEntity.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
@@ -22,6 +23,9 @@ class UNREALSCAPE_API AUSPlayerController : public APlayerController
 
 public:
     AUSPlayerController();
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    UDialogInterpreterComponent* DialogInterpreterComponent;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     AGameEntity* TargetEntity;
