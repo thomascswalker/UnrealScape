@@ -8,11 +8,6 @@ UDialogComponent::UDialogComponent()
     // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
     // off to improve performance if you don't need them.
     PrimaryComponentTick.bCanEverTick = true;
-
-    // Initialize the dialog asset for this component
-    Dialog = NewObject<UDialogAsset>();
-    Dialog->Player = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-    Dialog->Npc = Cast<AGameEntity>(GetOuter());
 }
 
 // Called when the game starts
@@ -20,7 +15,12 @@ void UDialogComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    // ...
+    // Initialize the dialog asset for this component
+    if (DialogAsset)
+    {
+        DialogAsset->Player = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+        DialogAsset->Npc = Cast<AGameEntity>(GetOuter());
+    }
 }
 
 // Called every frame

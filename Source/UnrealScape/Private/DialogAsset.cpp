@@ -2,64 +2,61 @@
 
 #include "DialogAsset.h"
 
-UDialogAsset::UDialogAsset(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) {}
-
-void UDialogAsset::AddPlayerDialog(const FString& Text, int Stage)
+UDialogAsset* UDialogAsset::AddOneOption(const FString& Text, const EDialogType Type, int ThisStep,
+                                         const FDialogOption& Option)
 {
     FDialog Dialog;
     Dialog.Text = Text;
-    Dialog.Type = EDialogType::Player;
-    Conversation.Add(Stage, Dialog);
+    Dialog.Type = Type;
+    Dialog.Options.Add(Option);
+    Conversation.Add(ThisStep, Dialog);
+    return this;
 }
 
-void UDialogAsset::AddNpcDialog(const FString& Text, int Stage)
-{
-    FDialog Dialog;
-    Dialog.Text = Text;
-    Dialog.Type = EDialogType::Npc;
-    Conversation.Add(Stage, Dialog);
-}
-
-void UDialogAsset::AddTwoOptions(const FString& Text, int Stage, const FDialogOption& Option1,
+UDialogAsset* UDialogAsset::AddTwoOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
                                  const FDialogOption& Option2)
 {
     FDialog Dialog;
     Dialog.Text = Text;
-    Dialog.Type = EDialogType::Options;
+    Dialog.Type = EDialogType::None;
     Dialog.Options.Add(Option1);
     Dialog.Options.Add(Option2);
-    Conversation.Add(Stage, Dialog);
+    Conversation.Add(ThisStep, Dialog);
+    return this;
 }
 
-void UDialogAsset::AddThreeOptions(const FString& Text, int Stage, const FDialogOption& Option1,
+UDialogAsset* UDialogAsset::AddThreeOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
                                    const FDialogOption& Option2, const FDialogOption& Option3)
 {
     FDialog Dialog;
     Dialog.Text = Text;
-    Dialog.Type = EDialogType::Options;
+    Dialog.Type = EDialogType::None;
     Dialog.Options.Add(Option1);
     Dialog.Options.Add(Option2);
     Dialog.Options.Add(Option3);
-    Conversation.Add(Stage, Dialog);
+    Conversation.Add(ThisStep, Dialog);
+    return this;
 }
 
-void UDialogAsset::AddFourOptions(const FString& Text, int Stage, const FDialogOption& Option1,
+UDialogAsset* UDialogAsset::AddFourOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
                                   const FDialogOption& Option2, const FDialogOption& Option3,
                                   const FDialogOption& Option4)
 {
     FDialog Dialog;
     Dialog.Text = Text;
-    Dialog.Type = EDialogType::Options;
+    Dialog.Type = EDialogType::None;
     Dialog.Options.Add(Option1);
     Dialog.Options.Add(Option2);
     Dialog.Options.Add(Option3);
     Dialog.Options.Add(Option4);
-    Conversation.Add(Stage, Dialog);
+    Conversation.Add(ThisStep, Dialog);
+    return this;
 }
 
-void UDialogAsset::AddEnd(int Stage)
+UDialogAsset* UDialogAsset::AddEnd(int ThisStep)
 {
     FDialog Dialog;
     Dialog.Type = EDialogType::End;
-    Conversation.Add(Stage, Dialog);
+    Conversation.Add(ThisStep, Dialog);
+    return this;
 }

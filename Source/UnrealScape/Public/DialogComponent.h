@@ -22,7 +22,7 @@ protected:
 
 public:
     UPROPERTY(BlueprintReadOnly)
-    UDialogAsset* Dialog = nullptr;
+    UDialogAsset* DialogAsset = NewObject<UDialogAsset>();
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,

@@ -13,7 +13,7 @@ enum class EDialogType : uint8
 {
     Player,
     Npc,
-    Options,
+    None,
     End
 };
 
@@ -27,7 +27,7 @@ public:
     FString Text;
 
     UPROPERTY(BlueprintReadWrite)
-    int GoToStage;
+    int GoToThisStep;
 };
 
 USTRUCT(BlueprintType)
@@ -46,7 +46,7 @@ public:
     TArray<FDialogOption> Options;
 };
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class UNREALSCAPE_API UDialogAsset : public UObject
 {
     GENERATED_BODY()
@@ -60,25 +60,23 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TMap<int, FDialog> Conversation;
 
-    UDialogAsset(const FObjectInitializer& ObjectInitializer);
+    UFUNCTION(BlueprintCallable, Category = "Dialog")
+    UDialogAsset* AddOneOption(const FString& Text, const EDialogType Type, int ThisStep, const FDialogOption& Option);
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
-    void AddPlayerDialog(const FString& Text, int Stage);
+    UDialogAsset* AddTwoOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
+                                const FDialogOption& Option2);
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
-    void AddNpcDialog(const FString& Text, int Stage);
-
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    void AddTwoOptions(const FString& Text, int Stage, const FDialogOption& Option1, const FDialogOption& Option2);
-
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    void AddThreeOptions(const FString& Text, int Stage, const FDialogOption& Option1, const FDialogOption& Option2,
+    UDialogAsset* AddThreeOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
+                                  const FDialogOption& Option2,
                          const FDialogOption& Option3);
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
-    void AddFourOptions(const FString& Text, int Stage, const FDialogOption& Option1, const FDialogOption& Option2,
+    UDialogAsset* AddFourOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
+                                 const FDialogOption& Option2,
                         const FDialogOption& Option3, const FDialogOption& Option4);
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
-    void AddEnd(int Stage);
+    UDialogAsset* AddEnd(int ThisStep);
 };
