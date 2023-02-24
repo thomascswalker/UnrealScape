@@ -27,7 +27,7 @@ public:
     FString Text;
 
     UPROPERTY(BlueprintReadWrite)
-    int GoToThisStep;
+    int GoToStep;
 };
 
 USTRUCT(BlueprintType)
@@ -46,7 +46,7 @@ public:
     TArray<FDialogOption> Options;
 };
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType)
 class UNREALSCAPE_API UDialogAsset : public UObject
 {
     GENERATED_BODY()
@@ -60,6 +60,9 @@ public:
     UPROPERTY(BlueprintReadOnly)
     TMap<int, FDialog> Conversation;
 
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void Construct();
+
     UFUNCTION(BlueprintCallable, Category = "Dialog")
     UDialogAsset* AddOneOption(const FString& Text, const EDialogType Type, int ThisStep, const FDialogOption& Option);
 
@@ -69,14 +72,19 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
     UDialogAsset* AddThreeOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                  const FDialogOption& Option2,
-                         const FDialogOption& Option3);
+                                  const FDialogOption& Option2, const FDialogOption& Option3);
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
     UDialogAsset* AddFourOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                 const FDialogOption& Option2,
-                        const FDialogOption& Option3, const FDialogOption& Option4);
+                                 const FDialogOption& Option2, const FDialogOption& Option3,
+                                 const FDialogOption& Option4);
 
     UFUNCTION(BlueprintCallable, Category = "Dialog")
     UDialogAsset* AddEnd(int ThisStep);
+
+    UFUNCTION(BlueprintCallable, Category = "Dialog")
+    UDialogAsset* AddPlayer(const FString& Text, int ThisStep, int GoToStep);
+
+    UFUNCTION(BlueprintCallable, Category = "Dialog")
+    UDialogAsset* AddNpc(const FString& Text, int ThisStep, int GoToStep);
 };

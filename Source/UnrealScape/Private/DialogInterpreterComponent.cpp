@@ -34,5 +34,11 @@ void UDialogInterpreterComponent::TickComponent(float DeltaTime, ELevelTick Tick
 
 void UDialogInterpreterComponent::Start(UDialogAsset* Dialog)
 {
+    if (!IsValid(Dialog))
+    {
+        WARNING(TEXT("Dialog not found on NPC!"));
+		return;
+	}
+    Dialog->Construct();
     DialogStarted.Broadcast(Dialog);
 }

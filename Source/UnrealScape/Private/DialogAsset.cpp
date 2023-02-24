@@ -2,6 +2,8 @@
 
 #include "DialogAsset.h"
 
+void UDialogAsset::Construct_Implementation() {}
+
 UDialogAsset* UDialogAsset::AddOneOption(const FString& Text, const EDialogType Type, int ThisStep,
                                          const FDialogOption& Option)
 {
@@ -14,7 +16,7 @@ UDialogAsset* UDialogAsset::AddOneOption(const FString& Text, const EDialogType 
 }
 
 UDialogAsset* UDialogAsset::AddTwoOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                 const FDialogOption& Option2)
+                                          const FDialogOption& Option2)
 {
     FDialog Dialog;
     Dialog.Text = Text;
@@ -26,7 +28,7 @@ UDialogAsset* UDialogAsset::AddTwoOptions(const FString& Text, int ThisStep, con
 }
 
 UDialogAsset* UDialogAsset::AddThreeOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                   const FDialogOption& Option2, const FDialogOption& Option3)
+                                            const FDialogOption& Option2, const FDialogOption& Option3)
 {
     FDialog Dialog;
     Dialog.Text = Text;
@@ -39,8 +41,8 @@ UDialogAsset* UDialogAsset::AddThreeOptions(const FString& Text, int ThisStep, c
 }
 
 UDialogAsset* UDialogAsset::AddFourOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                  const FDialogOption& Option2, const FDialogOption& Option3,
-                                  const FDialogOption& Option4)
+                                           const FDialogOption& Option2, const FDialogOption& Option3,
+                                           const FDialogOption& Option4)
 {
     FDialog Dialog;
     Dialog.Text = Text;
@@ -58,5 +60,27 @@ UDialogAsset* UDialogAsset::AddEnd(int ThisStep)
     FDialog Dialog;
     Dialog.Type = EDialogType::End;
     Conversation.Add(ThisStep, Dialog);
+    return this;
+}
+
+UDialogAsset* UDialogAsset::AddPlayer(const FString& Text, int ThisStep, int GoToStep)
+{
+    FDialogOption Option;
+    Option.GoToStep = GoToStep;
+    Option.Text = "Continue";
+
+    AddOneOption(Text, EDialogType::Player, ThisStep, Option);
+
+    return this;
+}
+
+UDialogAsset* UDialogAsset::AddNpc(const FString& Text, int ThisStep, int GoToStep)
+{
+    FDialogOption Option;
+    Option.GoToStep = GoToStep;
+    Option.Text = "Continue";
+
+    AddOneOption(Text, EDialogType::Npc, ThisStep, Option);
+
     return this;
 }

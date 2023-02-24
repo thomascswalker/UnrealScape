@@ -10,8 +10,16 @@ ASkeletalGameEntity::ASkeletalGameEntity()
     AddOwnedComponent(Mesh);
 
     // Navigation
-    NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("Navigator"));
+    NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("NavigationComponent"));
     AddOwnedComponent(NavigatorComponent);
+
+    // Dialog
+    DialogComponent = CreateDefaultSubobject<UDialogComponent>(TEXT("DialogComponent"));
+    if (IsValid(DialogAsset))
+    {
+        DialogComponent->DialogAsset = DialogAsset;
+    }
+    AddOwnedComponent(DialogComponent);
 }
 
 // Called when the game starts or when spawned
