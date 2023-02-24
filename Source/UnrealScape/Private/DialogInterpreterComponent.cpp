@@ -32,13 +32,24 @@ void UDialogInterpreterComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	// ...
 }
 
-void UDialogInterpreterComponent::Start(UDialogAsset* Dialog)
+void UDialogInterpreterComponent::Start(TSubclassOf<UDialogAsset> DialogClass)
 {
-    if (!IsValid(Dialog))
+    CurrentDialog = NewObject<UDialogAsset>(this, DialogClass, FName("Dialog"));
+    if (!IsValid(CurrentDialog))
     {
         WARNING(TEXT("Dialog not found on NPC!"));
 		return;
 	}
-    Dialog->Construct();
-    DialogStarted.Broadcast(Dialog);
+    CurrentDialog->Construct();
+    bIsTalking = true;
+    DialogStarted.Broadcast(CurrentDialog);
+}
+
+void UDialogInterpreterComponent::Stop()
+{
+    if (bIsTalking)
+    {
+        DialogStopped.Broadcast();
+    }
+    bIsTalking = false;
 }

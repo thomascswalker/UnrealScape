@@ -8,6 +8,7 @@
 #include "DialogInterpreterComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDialogStarted, UDialogAsset*, Dialog);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogStopped);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALSCAPE_API UDialogInterpreterComponent : public UActorComponent
@@ -30,6 +31,18 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
     FDialogStarted DialogStarted;
 
+    UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
+    FDialogStopped DialogStopped;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    UDialogAsset* CurrentDialog;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    bool bIsTalking = false;
+
     UFUNCTION(BlueprintCallable)
-    void Start(UDialogAsset* Dialog);
+    void Start(TSubclassOf<UDialogAsset> DialogClass);
+
+    UFUNCTION(BlueprintCallable)
+    void Stop();
 };

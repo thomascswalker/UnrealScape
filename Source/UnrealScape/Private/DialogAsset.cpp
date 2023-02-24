@@ -2,7 +2,10 @@
 
 #include "DialogAsset.h"
 
-void UDialogAsset::Construct_Implementation() {}
+void UDialogAsset::Construct_Implementation()
+{
+    INFO(L"Default construction. Implement this!");
+}
 
 UDialogAsset* UDialogAsset::AddOneOption(const FString& Text, const EDialogType Type, int ThisStep,
                                          const FDialogOption& Option)

@@ -4,9 +4,9 @@
 
 #include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
+#include "DialogComponent.h"
 #include "GameEntity.h"
 #include "NavigatorComponent.h"
-#include "DialogComponent.h"
 
 #include "SkeletalGameEntity.generated.h"
 
@@ -35,9 +35,6 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Category = "Components")
     UDialogComponent* DialogComponent;
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Dialog")
-    UDialogAsset* DialogAsset;
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;

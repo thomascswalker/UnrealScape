@@ -12,7 +12,7 @@
 
 #include "GameEntity.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractionComplete, AGameEntity*, Entity);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractionComplete);
 
 UCLASS()
 class UNREALSCAPE_API AGameEntity : public AActor, public IInteractive

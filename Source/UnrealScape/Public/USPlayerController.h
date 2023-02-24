@@ -27,6 +27,9 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
     UDialogInterpreterComponent* DialogInterpreterComponent;
 
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    bool bIsInteracting = false;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     AGameEntity* TargetEntity;
 
@@ -57,13 +60,13 @@ public:
     void Move(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
-    void MoveAndInteract(const AGameEntity* Entity, const FOption& Option);
+    void MoveAndInteract(const FOption& Option);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void MovementComplete();
 
     UFUNCTION(BlueprintCallable, Category = "Interaction")
-    void InteractionComplete(AGameEntity* Entity);
+    void InteractionComplete();
 
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();

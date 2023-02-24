@@ -15,17 +15,13 @@ ASkeletalGameEntity::ASkeletalGameEntity()
 
     // Dialog
     DialogComponent = CreateDefaultSubobject<UDialogComponent>(TEXT("DialogComponent"));
-    if (IsValid(DialogAsset))
-    {
-        DialogComponent->DialogAsset = DialogAsset;
-    }
     AddOwnedComponent(DialogComponent);
 }
 
 // Called when the game starts or when spawned
 void ASkeletalGameEntity::BeginPlay()
 {
-    //Something
+
 }
 
 // Called every frame
