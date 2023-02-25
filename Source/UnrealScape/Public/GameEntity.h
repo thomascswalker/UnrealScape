@@ -12,21 +12,14 @@
 
 #include "GameEntity.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractionComplete, AGameEntity*, Entity);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractionComplete);
 
 UCLASS()
 class UNREALSCAPE_API AGameEntity : public AActor, public IInteractive
 {
     GENERATED_BODY()
 
-    UPROPERTY(EditDefaultsOnly, Category = "Interaction")
-    FString Name;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Interaction")
-    EEntityType Type;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Interaction")
-    TArray<FOption> Options;
 
 public:
     // Sets default values for this actor's properties
@@ -34,6 +27,15 @@ public:
 
     UPROPERTY(BlueprintReadWrite, Category = "Interaction")
     float InteractDistance = 75.f;  // Slightly more than less than one straight tile distance
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    FString Name;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    EEntityType Type;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    TArray<FInteractOption> Options;
 
 protected:
     // Called when the game starts or when spawned
@@ -47,7 +49,7 @@ public:
     FInteractionComplete InteractionComplete;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-    void Interact(const FOption& Option) override;
+    void Interact(const FInteractOption& Option) override;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
     FVector GetFloor() override;
@@ -62,7 +64,7 @@ public:
     EEntityType GetType() override;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
-    TArray<FOption> GetOptions() override;
+    TArray<FInteractOption> GetOptions() override;
 
     UFUNCTION(BlueprintCallable, meta=(AutoCreateRefTerm="OldName,NewName"))
     void SetOptionName(const FString& OldName, const FString& NewName);

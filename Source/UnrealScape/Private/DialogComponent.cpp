@@ -14,13 +14,6 @@ UDialogComponent::UDialogComponent()
 void UDialogComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    // Initialize the dialog asset for this component
-    if (DialogAsset)
-    {
-        DialogAsset->Player = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-        DialogAsset->Npc = Cast<AGameEntity>(GetOuter());
-    }
 }
 
 // Called every frame

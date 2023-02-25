@@ -4,6 +4,7 @@
 
 #include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
+#include "DialogComponent.h"
 #include "GameEntity.h"
 #include "NavigatorComponent.h"
 
@@ -26,11 +27,14 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    UPROPERTY(BlueprintReadOnly, Category = "Components")
     USkeletalMeshComponent* Mesh;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    UPROPERTY(BlueprintReadOnly, Category = "Components")
     UNavigatorComponent* NavigatorComponent;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Components")
+    UDialogComponent* DialogComponent;
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;

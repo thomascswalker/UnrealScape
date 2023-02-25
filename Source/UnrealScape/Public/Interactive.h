@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Engine/DataTable.h"
 
 #include "Interactive.generated.h"
 
-USTRUCT(BlueprintType)
-struct FOption
+USTRUCT(BlueprintType, Blueprintable)
+struct FInteractOption : public FTableRowBase
 {
 public:
     GENERATED_BODY()
@@ -30,7 +31,7 @@ public:
     AActor* Player;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Interaction")
-    FOption Option;
+    FInteractOption Option;
 };
 
 UENUM(BlueprintType)
@@ -53,14 +54,14 @@ class UNREALSCAPE_API IInteractive
 {
     GENERATED_BODY()
 
-    TArray<FOption> DefaultOptions;
+    TArray<FInteractOption> DefaultOptions;
 
 public:
-    virtual void Interact(const FOption& Option) { return; }
+    virtual void Interact(const FInteractOption& Option) { return; }
     virtual FVector GetFloor() { return FVector::Zero(); }
 
     virtual APlayerController* GetPlayer() { return nullptr; }
     virtual FString GetName() { return FString(); }
     virtual EEntityType GetType() { return EEntityType::Object; }
-    virtual TArray<FOption> GetOptions() { return DefaultOptions; }
+    virtual TArray<FInteractOption> GetOptions() { return DefaultOptions; }
 };

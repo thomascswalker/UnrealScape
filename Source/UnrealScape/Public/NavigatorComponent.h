@@ -75,7 +75,7 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float MovementSpeed = 2.f;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
+    UPROPERTY(BlueprintReadOnly, Category = "Navigation")
     USplineComponent* Spline;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")

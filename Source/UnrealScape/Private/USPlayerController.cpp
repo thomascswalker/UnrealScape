@@ -85,7 +85,7 @@ void AUSPlayerController::OnLeftClick()
             return;
         }
 
-        MoveAndInteract(TargetEntity, TargetEntity->GetOptions()[0]);
+        MoveAndInteract(TargetEntity->GetOptions()[0]);
         return;
     }
 
@@ -133,11 +133,17 @@ void AUSPlayerController::OnRightClick()
 
 void AUSPlayerController::Move(const FVector Location)
 {
+
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
     {
         return;
     }
+
+    // Stop any existing dialog
+    DialogInterpreterComponent->Stop();
+
+
     FNavigationRequest Request;
 
     // Offset a small amount towards to the player so we can account for positions right on the line
@@ -150,12 +156,21 @@ void AUSPlayerController::Move(const FVector Location)
     }
 }
 
-void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FOption& Option)
+void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
     {
         return;
+    }
+
+    // Stop any existing dialog
+    DialogInterpreterComponent->Stop();
+
+    // Stop any existing interaction
+    if (bIsInteracting)
+    {
+        InteractionComplete();
     }
 
     if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
@@ -181,6 +196,7 @@ void AUSPlayerController::MoveAndInteract(const AGameEntity* Entity, const FOpti
     bool bCloseEnough = Distance < TargetEntity->InteractDistance;
     if (bCloseEnough || Option.bUseInteractionDistance == false)
     {
+        bIsInteracting = true;
         TargetEntity->Interact(Option);
         return;
     }
@@ -210,13 +226,18 @@ void AUSPlayerController::MovementComplete()
     TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
 
     // TODO: Update this!
+    bIsInteracting = true;
     TargetEntity->Interact(TargetEntity->GetOptions()[0]);
 }
 
-void AUSPlayerController::InteractionComplete(AGameEntity* Entity)
+void AUSPlayerController::InteractionComplete()
 {
+    bIsInteracting = false;
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-    Entity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
+    if (TargetEntity->InteractionComplete.IsBound())
+    {
+        TargetEntity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
+    }
 }
 
 void AUSPlayerController::UpdateFloorVisibility()

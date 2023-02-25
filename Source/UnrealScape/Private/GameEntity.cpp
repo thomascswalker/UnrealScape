@@ -21,7 +21,7 @@ void AGameEntity::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-void AGameEntity::Interact_Implementation(const FOption& Option) {}
+void AGameEntity::Interact_Implementation(const FInteractOption& Option) {}
 
 FVector AGameEntity::GetFloor_Implementation()
 {
@@ -48,14 +48,14 @@ EEntityType AGameEntity::GetType_Implementation()
     return Type;
 }
 
-TArray<FOption> AGameEntity::GetOptions_Implementation()
+TArray<FInteractOption> AGameEntity::GetOptions_Implementation()
 {
     return Options;
 }
 
 void AGameEntity::SetOptionName(const FString& OldName, const FString& NewName)
 {
-    for (FOption& Option : Options)
+    for (FInteractOption& Option : Options)
     {
         if (Option.Name == OldName)
         {

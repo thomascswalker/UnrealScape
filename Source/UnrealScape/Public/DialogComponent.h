@@ -7,7 +7,7 @@
 #include "DialogAsset.h"
 #include "DialogComponent.generated.h"
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALSCAPE_API UDialogComponent : public UActorComponent
 {
     GENERATED_BODY()
@@ -21,8 +21,8 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    UPROPERTY(BlueprintReadOnly)
-    UDialogAsset* DialogAsset = NewObject<UDialogAsset>();
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UDialogAsset* DialogAsset;
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,
