@@ -156,7 +156,7 @@ void AUSPlayerController::Move(const FVector Location)
     }
 }
 
-void AUSPlayerController::MoveAndInteract(const FOption& Option)
+void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
 {
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)

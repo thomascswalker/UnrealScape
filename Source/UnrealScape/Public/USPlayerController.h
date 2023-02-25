@@ -60,7 +60,7 @@ public:
     void Move(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
-    void MoveAndInteract(const FOption& Option);
+    void MoveAndInteract(const FInteractOption& Option);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void MovementComplete();

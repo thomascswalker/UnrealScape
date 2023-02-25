@@ -34,6 +34,10 @@ void UDialogInterpreterComponent::TickComponent(float DeltaTime, ELevelTick Tick
 
 void UDialogInterpreterComponent::Start(TSubclassOf<UDialogAsset> DialogClass)
 {
+    if (CurrentDialog)
+    {
+        CurrentDialog->ConditionalBeginDestroy();
+    }
     CurrentDialog = NewObject<UDialogAsset>(this, DialogClass, FName("Dialog"));
     if (!IsValid(CurrentDialog))
     {
