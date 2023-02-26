@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Tile.h"
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
 #include "TileInfo.generated.h"

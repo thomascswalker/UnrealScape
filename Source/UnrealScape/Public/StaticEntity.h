@@ -1,0 +1,74 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Interactive.h"
+#include "Kismet/GameplayStatics.h"
+#include "USUtils.h"
+
+#include "StaticEntity.generated.h"
+
+UCLASS()
+class UNREALSCAPE_API AStaticEntity : public AActor, public IInteractive
+{
+    GENERATED_BODY()
+
+public:
+    // Sets default values for this actor's properties
+    AStaticEntity();
+
+protected:
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
+
+public:
+    // Components
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    UInteractiveComponent* InteractiveComponent;
+
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
+    float InteractDistance = DEFAULT_INTERACT_DISTANCE;
+
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
+    FString Name = "Object";
+
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
+    EEntityType Type = EEntityType::Object;
+
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
+    TArray<FInteractOption> Options;
+
+    // Functions
+    virtual void Tick(float DeltaTime) override;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    void Interact(const FInteractOption& Option);
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    FVector GetFloor();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    APlayerController* GetPlayer();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    FString GetName();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    EEntityType GetType();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    TArray<FInteractOption> GetOptions(bool bVisibleOnly = true);
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    float GetInteractDistance();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    UInteractiveComponent* GetInteractiveComponent();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, meta = (AutoCreateRefTerm = "OptionName"))
+    void SetOptionVisibility(const FString& OptionName, bool bVisibility);
+};

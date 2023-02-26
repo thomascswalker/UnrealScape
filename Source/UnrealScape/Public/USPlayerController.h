@@ -6,7 +6,7 @@
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
 #include "DialogInterpreterComponent.h"
-#include "GameEntity.h"
+#include "StaticEntity.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,7 +31,10 @@ public:
     bool bIsInteracting = false;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    AGameEntity* TargetEntity;
+    AActor* TargetActor;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    TScriptInterface<IInteractive> TargetEntity;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     FInteractRequest CurrentInteractionRequest;
@@ -54,7 +57,7 @@ public:
     void OnRightClick();
 
     UFUNCTION(BlueprintNativeEvent, Category = "Actions")
-    void ContextMenuRequested(const TArray<AGameEntity*>& Entities);
+    void ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);

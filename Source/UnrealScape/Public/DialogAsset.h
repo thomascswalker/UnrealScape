@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameEntity.h"
+#include "StaticEntity.h"
 #include "UObject/NoExportTypes.h"
 
 #include "DialogAsset.generated.h"
@@ -55,7 +55,7 @@ public:
     APlayerController* Player = nullptr;
 
     UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn = true))
-    AGameEntity* Npc = nullptr;
+    TScriptInterface<IInteractive> Npc = nullptr;
 
     UPROPERTY(BlueprintReadOnly)
     TMap<int, FDialog> Conversation;
