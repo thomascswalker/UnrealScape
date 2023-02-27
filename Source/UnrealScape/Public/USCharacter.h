@@ -29,10 +29,21 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    // Called every frame
-    virtual void Tick(float DeltaTime) override;
+    // Properties
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    TObjectPtr<UNavigatorComponent> NavigatorComponent;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    TObjectPtr<UCameraComponent> CameraComponent;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    TObjectPtr<USpringArmComponent> SpringArmComponent;
 
-    // Called to bind functionality to input
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+    float CameraRotationSpeed = 2.f;
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+    float CameraZoomSpeed = 10.f;
+
+    // Functions
+    virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
     UFUNCTION(BlueprintCallable, Category = "Input")
@@ -41,16 +52,4 @@ public:
     void OnCameraRotateUp(float Value);
     UFUNCTION(BlueprintCallable, Category = "Input")
     void OnCameraZoom(float Delta);
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
-    float CameraRotationSpeed = 2.f;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
-    float CameraZoomSpeed = 10.f;
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
-    UNavigatorComponent* NavigatorComponent;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
-    UCameraComponent* CameraComponent;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
-    USpringArmComponent* SpringArmComponent;
 };

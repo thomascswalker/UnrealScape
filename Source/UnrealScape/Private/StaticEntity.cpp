@@ -8,6 +8,9 @@ AStaticEntity::AStaticEntity()
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
+    StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+    StaticMeshComponent->SetupAttachment(RootComponent);
+
     InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
     AddOwnedComponent(InteractiveComponent);
 }
@@ -43,22 +46,22 @@ APlayerController* AStaticEntity::GetPlayer_Implementation()
 
 FString AStaticEntity::GetName_Implementation()
 {
-    return Name;
+    return InteractiveComponent->Name;
 }
 
 EEntityType AStaticEntity::GetType_Implementation()
 {
-    return Type;
+    return InteractiveComponent->Type;
 }
 
 TArray<FInteractOption> AStaticEntity::GetOptions_Implementation(bool bVisibleOnly)
 {
     if (!bVisibleOnly)
     {
-        return Options;
+        return InteractiveComponent->Options;
     }
     TArray<FInteractOption> VisibleOptions;
-    for (FInteractOption& Option : Options)
+    for (FInteractOption& Option : InteractiveComponent->Options)
     {
         if (Option.bVisible)
         {
@@ -70,7 +73,7 @@ TArray<FInteractOption> AStaticEntity::GetOptions_Implementation(bool bVisibleOn
 
 float AStaticEntity::GetInteractDistance_Implementation()
 {
-    return InteractDistance;
+    return InteractiveComponent->InteractDistance;
 }
 
 UInteractiveComponent* AStaticEntity::GetInteractiveComponent_Implementation()
@@ -80,7 +83,7 @@ UInteractiveComponent* AStaticEntity::GetInteractiveComponent_Implementation()
 
 void AStaticEntity::SetOptionVisibility_Implementation(const FString& OptionName, bool bVisibility = true)
 {
-    for (FInteractOption& Option : Options)
+    for (FInteractOption& Option : InteractiveComponent->Options)
     {
         if (Option.Name == OptionName)
         {

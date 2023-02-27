@@ -6,11 +6,13 @@
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
 #include "DialogInterpreterComponent.h"
-#include "StaticEntity.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
+#include "InteractiveData.h"
+#include "InteractiveComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "StaticEntity.h"
 #include "Tile.h"
 #include "USCharacter.h"
 
@@ -25,16 +27,16 @@ public:
     AUSPlayerController();
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
-    UDialogInterpreterComponent* DialogInterpreterComponent;
-
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    bool bIsInteracting = false;
+    TObjectPtr<UDialogInterpreterComponent> DialogInterpreterComponent;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    AActor* TargetActor;
+    TObjectPtr<AActor> TargetActor;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     TScriptInterface<IInteractive> TargetEntity;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    bool bIsInteracting = false;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     FInteractRequest CurrentInteractionRequest;

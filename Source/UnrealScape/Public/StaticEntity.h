@@ -7,10 +7,21 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interactive.h"
+#include "InteractiveComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "USUtils.h"
 
 #include "StaticEntity.generated.h"
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FStaticEntityData : public FEntityData
+{
+public:
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    TObjectPtr<UStaticMesh> StaticMesh;
+};
 
 UCLASS()
 class UNREALSCAPE_API AStaticEntity : public AActor, public IInteractive
@@ -26,21 +37,12 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    // Components
+    // Properties
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
+
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    UInteractiveComponent* InteractiveComponent;
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    float InteractDistance = DEFAULT_INTERACT_DISTANCE;
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    FString Name = "Object";
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    EEntityType Type = EEntityType::Object;
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    TArray<FInteractOption> Options;
+    TObjectPtr<UInteractiveComponent> InteractiveComponent;
 
     // Functions
     virtual void Tick(float DeltaTime) override;

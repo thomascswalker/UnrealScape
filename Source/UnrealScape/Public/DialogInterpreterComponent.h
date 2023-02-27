@@ -35,7 +35,7 @@ public:
     FDialogStopped DialogStopped;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    UDialogAsset* CurrentDialog;
+    TObjectPtr<UDialogAsset> CurrentDialog;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     bool bIsTalking = false;

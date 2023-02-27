@@ -5,17 +5,31 @@
 // Sets default values for this character's properties
 APawnEntity::APawnEntity()
 {
-    // Navigation
+    PrimaryActorTick.bCanEverTick = true;
+
+    SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+    if (SkeletalMeshComponent)
+    {
+        SkeletalMeshComponent->SetupAttachment(RootComponent);
+    }
+
     NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("NavigationComponent"));
-    AddOwnedComponent(NavigatorComponent);
-
-    // Dialog
+    if (NavigatorComponent)
+    {
+        AddOwnedComponent(NavigatorComponent);
+    }
+    
     DialogComponent = CreateDefaultSubobject<UDialogComponent>(TEXT("DialogComponent"));
-    AddOwnedComponent(DialogComponent);
-
-    // Interaction
+    if (DialogComponent)
+    {
+        AddOwnedComponent(DialogComponent);
+    }
+    
     InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
-    AddOwnedComponent(InteractiveComponent);
+    if (InteractiveComponent)
+    {
+        AddOwnedComponent(InteractiveComponent);
+    }
 }
 
 // Called when the game starts or when spawned
@@ -43,22 +57,22 @@ APlayerController* APawnEntity::GetPlayer_Implementation()
 
 FString APawnEntity::GetName_Implementation()
 {
-    return Name;
+    return InteractiveComponent->Name;
 }
 
 EEntityType APawnEntity::GetType_Implementation()
 {
-    return Type;
+    return InteractiveComponent->Type;
 }
 
 TArray<FInteractOption> APawnEntity::GetOptions_Implementation(bool bVisibleOnly)
 {
     if (!bVisibleOnly)
     {
-        return Options;
+        return InteractiveComponent->Options;
     }
     TArray<FInteractOption> VisibleOptions;
-    for (FInteractOption& Option : Options)
+    for (FInteractOption& Option : InteractiveComponent->Options)
     {
         if (Option.bVisible)
         {
@@ -70,7 +84,7 @@ TArray<FInteractOption> APawnEntity::GetOptions_Implementation(bool bVisibleOnly
 
 float APawnEntity::GetInteractDistance_Implementation()
 {
-    return InteractDistance;
+    return InteractiveComponent->InteractDistance;
 }
 
 UInteractiveComponent* APawnEntity::GetInteractiveComponent_Implementation()
@@ -81,7 +95,7 @@ UInteractiveComponent* APawnEntity::GetInteractiveComponent_Implementation()
 
 void APawnEntity::SetOptionVisibility_Implementation(const FString& OptionName, bool bVisibility)
 {
-    for (FInteractOption& Option : Options)
+    for (FInteractOption& Option : InteractiveComponent->Options)
     {
         if (Option.Name == OptionName)
         {

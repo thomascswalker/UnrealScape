@@ -6,9 +6,23 @@
 #include "CoreMinimal.h"
 #include "DialogComponent.h"
 #include "Interactive.h"
+#include "InteractiveComponent.h"
 #include "NavigatorComponent.h"
 
 #include "PawnEntity.generated.h"
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FPawnEntityData : public FEntityData
+{
+public:
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    TSubclassOf<UDialogAsset> DialogAsset;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    TObjectPtr<USkeletalMesh> SkeletalMesh;
+};
 
 /**
  * 
@@ -27,28 +41,18 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    // Components
+    // Properties
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
-    UNavigatorComponent* NavigatorComponent;
-
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
-    UDialogComponent* DialogComponent;
+    TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
-    UInteractiveComponent* InteractiveComponent;
+    TObjectPtr<UNavigatorComponent> NavigatorComponent;
 
-    // Variables
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    float InteractDistance = DEFAULT_INTERACT_DISTANCE;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    TObjectPtr<UDialogComponent> DialogComponent;
 
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    FString Name = "Object";
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    EEntityType Type = EEntityType::Object;
-
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Interaction")
-    TArray<FInteractOption> Options;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    TObjectPtr<UInteractiveComponent> InteractiveComponent;
 
     // Functions
     virtual void Tick(float DeltaTime) override;

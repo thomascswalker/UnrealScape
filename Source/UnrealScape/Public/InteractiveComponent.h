@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "InteractiveData.h"
 #include "InteractiveComponent.generated.h"
-
 
 
 UCLASS(BlueprintType, Blueprintable, meta=(BlueprintSpawnableComponent) )
@@ -22,9 +22,23 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
+	// Functions
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+    // Properties
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    float InteractDistance = DEFAULT_INTERACT_DISTANCE;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    FString Name = "Object";
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    EEntityType Type = EEntityType::Object;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    TArray<FInteractOption> Options;
+
+    // Events
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FComplete);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, EditDefaultsOnly, Category = "Event Dispatchers")
     FComplete Complete;

@@ -22,7 +22,7 @@ protected:
 
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    UDialogAsset* DialogAsset;
+    TSubclassOf<UDialogAsset> DialogAssetClass;
 
     // Called every frame
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,
