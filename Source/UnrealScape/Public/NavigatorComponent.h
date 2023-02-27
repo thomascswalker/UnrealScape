@@ -50,6 +50,8 @@ class UNREALSCAPE_API UNavigatorComponent : public UActorComponent, public IVisu
     float Length;
     float CurrentTime = 0.f;
 
+    TObjectPtr<USplineComponent> Spline;
+
 public:
     // Sets default values for this component's properties
     UNavigatorComponent();
@@ -63,6 +65,8 @@ protected:
                                FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+    
+
     UPROPERTY(BlueprintAssignable, Category = "Event Dispatchers")
     FMovingSignature Moving;
 
@@ -74,9 +78,6 @@ public:
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float MovementSpeed = 2.f;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Navigation")
-    USplineComponent* Spline;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float GoalThreshold = 10.f;

@@ -21,8 +21,6 @@ class UNREALSCAPE_API AGrid : public AActor
     FVector WorldOrigin;
     FVector WorldSize;
 
-    UClass* TileClass = ATile::StaticClass();
-
 public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Debug")
     bool bDrawDebugLines = false;

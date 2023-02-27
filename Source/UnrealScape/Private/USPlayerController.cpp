@@ -7,7 +7,8 @@ AUSPlayerController::AUSPlayerController()
     bShowMouseCursor = true;
     bAttachToPawn = true;
 
-    DialogInterpreterComponent = CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
+    DialogInterpreterComponent =
+        CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
     AddOwnedComponent(DialogInterpreterComponent);
 }
 
@@ -73,51 +74,68 @@ void AUSPlayerController::OnLeftClick()
     SingleLineTraceUnderMouseCursor(HitResult, ECC_Interactive);
     if (HitResult.bBlockingHit)
     {
-        TargetEntity = Cast<AGameEntity>(HitResult.GetActor());
-        if (!TargetEntity)
+        bool bImplements = HitResult.GetActor()->Implements<UInteractive>();
+        if (bImplements)
         {
+            TargetActor = HitResult.GetActor();
+            TargetEntity.SetObject(TargetActor);
+            TargetEntity.SetInterface(Cast<IInteractive>(TargetActor));
+
+            if (!TargetActor)
+            {
+                return;
+            }
+
+            TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(TargetEntity.GetObject(), true);
+            if (Options.Num() == 0)
+            {
+                INFO("Target has no options!");
+                return;
+            }
+
+            MoveAndInteract(Options[0]);
             return;
         }
-
-        if (TargetEntity->GetOptions().Num() == 0)
-        {
-            INFO("Target has no options!");
-            return;
-        }
-
-        MoveAndInteract(TargetEntity->GetOptions()[0]);
-        return;
     }
 
     // Otherwise if we've hit just normal terrain, we'll just move
     SingleLineTraceUnderMouseCursor(HitResult, ECC_Terrain);
     if (HitResult.bBlockingHit)
     {
-        TargetEntity = nullptr;
+        TargetActor = nullptr;
         FVector Location = HitResult.Location;
         Move(Location);
     }
     else
     {
-        TargetEntity = nullptr;
+        TargetActor = nullptr;
     }
 }
 
 void AUSPlayerController::OnRightClick()
 {
     TArray<FHitResult> HitResults;
-    TArray<AGameEntity*> Entities;
+    TArray<TScriptInterface<IInteractive>> Entities;
 
     MultiLineTraceUnderMouseCursor(HitResults, ECC_Interactive);
-    for (const FHitResult& Result : HitResults)
+    for (const FHitResult& HitResult : HitResults)
     {
-        AGameEntity* Entity = Cast<AGameEntity>(Result.GetActor());
+        AActor* Actor = HitResult.GetActor();
+        bool bImplements = Actor->Implements<UInteractive>();
+        if (!bImplements)
+        {
+            continue;
+        }
+        TScriptInterface<IInteractive> Entity;
+        Entity.SetObject(Actor);
+        Entity.SetInterface(Cast<IInteractive>(Actor));
         if (!Entity)
         {
             continue;
         }
 
-        if (Entity->GetOptions().Num() == 0)
+        TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(Entity.GetObject(), true);
+        if (Options.Num() == 0)
         {
             continue;
         }
@@ -143,7 +161,6 @@ void AUSPlayerController::Move(const FVector Location)
     // Stop any existing dialog
     DialogInterpreterComponent->Stop();
 
-
     FNavigationRequest Request;
 
     // Offset a small amount towards to the player so we can account for positions right on the line
@@ -158,6 +175,7 @@ void AUSPlayerController::Move(const FVector Location)
 
 void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
 {
+    INFO(Option.Name);
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
     {
@@ -178,26 +196,30 @@ void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
         ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
     }
 
-    if (TargetEntity->InteractionComplete.IsBound())
+    UInteractiveComponent* InteractiveComponent =
+        IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());
+    if (InteractiveComponent->Complete.IsBound())
     {
-        TargetEntity->InteractionComplete.Clear();
+        InteractiveComponent->Complete.Clear();
     }
 
-    FVector Location = TargetEntity->GetFloor();
+    FVector Location = IInteractive::Execute_GetFloor(TargetEntity.GetObject());
 
     // Offset towards the player
-    FVector Direction = (TargetEntity->GetActorLocation() - GetPawn()->GetActorLocation()).GetSafeNormal();
-    Location = TargetEntity->GetActorLocation() - (Direction * TargetEntity->InteractDistance);
+    FVector Direction = (Location - GetPawn()->GetActorLocation()).GetSafeNormal();
+
+    float InteractDistance = IInteractive::Execute_GetInteractDistance(TargetEntity.GetObject());
+    Location -= (Direction * InteractDistance);
 
     ControlledPawn->NavigatorComponent->UpdateCurrentGrid();
     ControlledPawn->NavigatorComponent->UpdateCurrentTile();
 
     float Distance = FVector::Distance(ControlledPawn->NavigatorComponent->CurrentTile.WorldPosition, Location);
-    bool bCloseEnough = Distance < TargetEntity->InteractDistance;
+    bool bCloseEnough = Distance < InteractDistance;
     if (bCloseEnough || Option.bUseInteractionDistance == false)
     {
         bIsInteracting = true;
-        TargetEntity->Interact(Option);
+        IInteractive::Execute_Interact(TargetEntity.GetObject(), Option);
         return;
     }
 
@@ -219,24 +241,31 @@ void AUSPlayerController::MovementComplete()
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(this, &AUSPlayerController::MovementComplete);
 
-    if (TargetEntity->InteractionComplete.IsBound())
+    UInteractiveComponent* InteractiveComponent =
+        IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());
+
+    if (InteractiveComponent->Complete.IsBound())
     {
-        TargetEntity->InteractionComplete.Clear();
+        InteractiveComponent->Complete.Clear();
     }
-    TargetEntity->InteractionComplete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
+    InteractiveComponent->Complete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
 
     // TODO: Update this!
     bIsInteracting = true;
-    TargetEntity->Interact(TargetEntity->GetOptions()[0]);
+    TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(TargetEntity.GetObject(), true);
+    IInteractive::Execute_Interact(TargetEntity.GetObject(), Options[0]);
 }
 
 void AUSPlayerController::InteractionComplete()
 {
     bIsInteracting = false;
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-    if (TargetEntity->InteractionComplete.IsBound())
+
+    UInteractiveComponent* InteractiveComponent =
+        IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());
+    if (InteractiveComponent->Complete.IsBound())
     {
-        TargetEntity->InteractionComplete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
+        InteractiveComponent->Complete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
     }
 }
 
@@ -265,4 +294,4 @@ void AUSPlayerController::UpdateFloorVisibility()
     }
 }
 
-void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<AGameEntity*>& Entities) {}
+void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<TScriptInterface<IInteractive>>& Entities) {}

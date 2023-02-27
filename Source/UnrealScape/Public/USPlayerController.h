@@ -6,11 +6,13 @@
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
 #include "DialogInterpreterComponent.h"
-#include "GameEntity.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
+#include "InteractiveData.h"
+#include "InteractiveComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "StaticEntity.h"
 #include "Tile.h"
 #include "USCharacter.h"
 
@@ -25,13 +27,16 @@ public:
     AUSPlayerController();
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
-    UDialogInterpreterComponent* DialogInterpreterComponent;
+    TObjectPtr<UDialogInterpreterComponent> DialogInterpreterComponent;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    TObjectPtr<AActor> TargetActor;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
+    TScriptInterface<IInteractive> TargetEntity;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     bool bIsInteracting = false;
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    AGameEntity* TargetEntity;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     FInteractRequest CurrentInteractionRequest;
@@ -54,7 +59,7 @@ public:
     void OnRightClick();
 
     UFUNCTION(BlueprintNativeEvent, Category = "Actions")
-    void ContextMenuRequested(const TArray<AGameEntity*>& Entities);
+    void ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);
