@@ -79,6 +79,9 @@ public:
     UInteractiveComponent* GetInteractiveComponent();
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    UMeshComponent* GetMeshComponent();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     float GetInteractDistance();
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, meta = (AutoCreateRefTerm = "OptionName"))

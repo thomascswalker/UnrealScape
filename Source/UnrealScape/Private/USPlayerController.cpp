@@ -6,6 +6,7 @@ AUSPlayerController::AUSPlayerController()
 {
     bShowMouseCursor = true;
     bAttachToPawn = true;
+    PrimaryActorTick.bCanEverTick = true;
 
     DialogInterpreterComponent =
         CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
@@ -14,6 +15,7 @@ AUSPlayerController::AUSPlayerController()
 
 void AUSPlayerController::Tick(float DeltaTime)
 {
+    Super::Tick(DeltaTime);
     UpdateFloorVisibility();
 }
 

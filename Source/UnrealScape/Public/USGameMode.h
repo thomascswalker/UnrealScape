@@ -4,7 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "USCharacter.h"
 #include "USPlayerController.h"
 
@@ -14,7 +14,7 @@
  * 
  */
 UCLASS()
-class UNREALSCAPE_API AUSGameMode : public AGameModeBase
+class UNREALSCAPE_API AUSGameMode : public AGameMode
 {
     GENERATED_BODY()
 

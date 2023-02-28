@@ -42,10 +42,7 @@ void APawnEntity::Interact_Implementation(const FInteractOption& Option) {}
 
 FVector APawnEntity::GetFloor_Implementation()
 {
-    FVector Origin;
-    FVector Extent;
-    GetActorBounds(true, Origin, Extent);
-    return Origin;
+    return GetActorLocation();
 }
 
 APlayerController* APawnEntity::GetPlayer_Implementation()
@@ -90,6 +87,11 @@ float APawnEntity::GetInteractDistance_Implementation()
 UInteractiveComponent* APawnEntity::GetInteractiveComponent_Implementation()
 {
     return InteractiveComponent;
+}
+
+UMeshComponent* APawnEntity::GetMeshComponent_Implementation()
+{
+    return SkeletalMeshComponent;
 }
 
 

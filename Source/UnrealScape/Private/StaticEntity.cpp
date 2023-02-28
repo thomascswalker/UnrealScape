@@ -81,6 +81,11 @@ UInteractiveComponent* AStaticEntity::GetInteractiveComponent_Implementation()
     return InteractiveComponent;
 }
 
+UMeshComponent* AStaticEntity::GetMeshComponent_Implementation()
+{
+    return StaticMeshComponent;
+}
+
 void AStaticEntity::SetOptionVisibility_Implementation(const FString& OptionName, bool bVisibility = true)
 {
     for (FInteractOption& Option : InteractiveComponent->Options)

@@ -46,5 +46,8 @@ public:
     UInteractiveComponent* GetInteractiveComponent();
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    UMeshComponent* GetMeshComponent();
+
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void SetOptionVisibility(const FString& OptionName, bool bVisibility);
 };
