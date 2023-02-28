@@ -71,6 +71,9 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     UInteractiveComponent* GetInteractiveComponent();
 
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    UMeshComponent* GetMeshComponent();
+
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, meta = (AutoCreateRefTerm = "OptionName"))
     void SetOptionVisibility(const FString& OptionName, bool bVisibility);
 };
