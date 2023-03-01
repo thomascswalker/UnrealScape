@@ -47,7 +47,7 @@ void UDialogInterpreterComponent::Start(TSubclassOf<UDialogAsset> DialogClass)
         FATAL(Message);
         return;
     }
-    CurrentDialog->Construct();
+
     bIsTalking = true;
     DialogStarted.Broadcast(CurrentDialog);
 }
