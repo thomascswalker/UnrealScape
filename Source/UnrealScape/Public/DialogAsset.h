@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StaticEntity.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/NoExportTypes.h"
+#include "USUtils.h"
 
 #include "DialogAsset.generated.h"
 
@@ -24,26 +25,10 @@ public:
     GENERATED_BODY();
 
     UPROPERTY(BlueprintReadWrite)
-    FString Text;
+    FText Text;
 
     UPROPERTY(BlueprintReadWrite)
     int GoToStep;
-};
-
-USTRUCT(BlueprintType)
-struct FDialog
-{
-public:
-    GENERATED_BODY()
-
-    UPROPERTY(BlueprintReadWrite)
-    FString Text;
-
-    UPROPERTY(BlueprintReadWrite)
-    EDialogType Type;
-
-    UPROPERTY(BlueprintReadWrite)
-    TArray<FDialogOption> Options;
 };
 
 UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType)
@@ -51,40 +36,44 @@ class UNREALSCAPE_API UDialogAsset : public UObject
 {
     GENERATED_BODY()
 public:
-    UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn = true))
-    APlayerController* Player = nullptr;
-
-    UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn = true))
-    TScriptInterface<IInteractive> Npc = nullptr;
-
-    UPROPERTY(BlueprintReadOnly)
-    TMap<int, FDialog> Conversation;
-
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-    void Construct();
+    void Communicate(int Step);
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddOneOption(const FString& Text, const EDialogType Type, int ThisStep, const FDialogOption& Option);
+    UFUNCTION(BlueprintCallable)
+    bool PlayerHasCondition();
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddTwoOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                const FDialogOption& Option2);
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    TObjectPtr<UWorld> World;
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddThreeOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                  const FDialogOption& Option2, const FDialogOption& Option3);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAddOneOption, FText, Text, const FDialogOption&, Option);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FAddOneOption AddOneOption;
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddFourOptions(const FString& Text, int ThisStep, const FDialogOption& Option1,
-                                 const FDialogOption& Option2, const FDialogOption& Option3,
-                                 const FDialogOption& Option4);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAddTwoOptions, FText, Text, const FDialogOption&, Option1,
+                                                   const FDialogOption&, Option2);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FAddTwoOptions AddTwoOptions;
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddEnd(int ThisStep);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FAddThreeOptions, FText, Text, const FDialogOption&, Option1,
+                                                  const FDialogOption&, Option2, const FDialogOption&, Option3);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FAddThreeOptions AddThreeOptions;
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddPlayer(const FString& Text, int ThisStep, int GoToStep);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FAddFourOptions, FText, Text, const FDialogOption&, Option1,
+                                                  const FDialogOption&, Option2, const FDialogOption&, Option3,
+                                                  const FDialogOption&, Option4);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FAddFourOptions AddFourOptions;
 
-    UFUNCTION(BlueprintCallable, Category = "Dialog")
-    UDialogAsset* AddNpc(const FString& Text, int ThisStep, int GoToStep);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAddNpc, FText, Text, int, GoToStep);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FAddNpc AddNpc;
+
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAddPlayer, FText, Text, int, GoToStep);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FAddPlayer AddPlayer;
+
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEndDialog);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FEndDialog EndDialog;
 };
