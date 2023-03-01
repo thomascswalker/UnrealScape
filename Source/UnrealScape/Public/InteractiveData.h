@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "UObject/Interface.h"
-#include "InteractiveData.h"
 
 #include "InteractiveData.generated.h"
 

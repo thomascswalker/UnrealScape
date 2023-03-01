@@ -29,7 +29,7 @@ void UDialogInterpreterComponent::TickComponent(float DeltaTime, ELevelTick Tick
     // ...
 }
 
-void UDialogInterpreterComponent::Start(TSubclassOf<UDialogAsset> DialogClass)
+void UDialogInterpreterComponent::Start(TSubclassOf<UDialogAsset> DialogClass, int InitialStep)
 {
     if (!IsValid(DialogClass))
     {
@@ -49,7 +49,7 @@ void UDialogInterpreterComponent::Start(TSubclassOf<UDialogAsset> DialogClass)
     }
 
     bIsTalking = true;
-    DialogStarted.Broadcast(CurrentDialog);
+    DialogStarted.Broadcast(CurrentDialog, InitialStep);
 }
 
 void UDialogInterpreterComponent::Stop()

@@ -7,6 +7,11 @@ void UDialogAsset::Communicate_Implementation(int Step)
     INFO(L"Default construction. Implement this!");
 }
 
+UWorld* UDialogAsset::GetWorld()
+{
+    return Super::GetWorld();
+}
+
 bool UDialogAsset::PlayerHasCondition()
 {
     APlayerController* Controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
