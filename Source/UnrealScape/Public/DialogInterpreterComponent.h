@@ -7,7 +7,7 @@
 #include "DialogComponent.h"
 #include "DialogInterpreterComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDialogStarted, UDialogAsset*, Dialog);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDialogStarted, UDialogAsset*, Dialog, int, InitialStep);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogStopped);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -41,7 +41,7 @@ public:
     bool bIsTalking = false;
 
     UFUNCTION(BlueprintCallable)
-    void Start(TSubclassOf<UDialogAsset> DialogClass);
+    void Start(TSubclassOf<UDialogAsset> DialogClass, int InitialStep);
 
     UFUNCTION(BlueprintCallable)
     void Stop();

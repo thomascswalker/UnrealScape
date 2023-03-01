@@ -31,7 +31,7 @@ public:
     int GoToStep;
 };
 
-UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType)
+UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType, Meta = (ShowWorldContextPin))
 class UNREALSCAPE_API UDialogAsset : public UObject
 {
     GENERATED_BODY()
@@ -42,8 +42,8 @@ public:
     UFUNCTION(BlueprintCallable)
     bool PlayerHasCondition();
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    TObjectPtr<UWorld> World;
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UWorld* GetWorld();
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAddOneOption, FText, Text, const FDialogOption&, Option);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
