@@ -8,10 +8,11 @@
 #include "DialogInterpreterComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
-#include "InteractiveData.h"
 #include "InteractiveComponent.h"
+#include "InteractiveData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "QuestComponent.h"
 #include "StaticEntity.h"
 #include "Tile.h"
 #include "USCharacter.h"
@@ -28,6 +29,9 @@ public:
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
     TObjectPtr<UDialogInterpreterComponent> DialogInterpreterComponent;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    TObjectPtr<UQuestComponent> QuestComponent;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     TObjectPtr<AActor> TargetActor;
