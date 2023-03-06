@@ -64,6 +64,9 @@ public:
     FQuestCompleted QuestCompleted;
 
     // Functions
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    virtual UWorld* GetWorld() const override;
+
     UFUNCTION(BlueprintCallable)
     void Start();
 

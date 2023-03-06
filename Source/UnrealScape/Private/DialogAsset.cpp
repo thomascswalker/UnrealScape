@@ -7,9 +7,9 @@ void UDialogAsset::Communicate_Implementation(int Step)
     INFO(L"Default construction. Implement this!");
 }
 
-UWorld* UDialogAsset::GetWorld()
+UWorld* UDialogAsset::GetWorld() const
 {
-    return Super::GetWorld();
+    return GetOuter()->GetWorld();
 }
 
 bool UDialogAsset::PlayerHasCondition()

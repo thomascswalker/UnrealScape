@@ -3,6 +3,11 @@
 
 #include "Quest.h"
 
+UWorld* UQuest::GetWorld() const
+{
+    return GetOuter()->GetWorld();
+}
+
 void UQuest::Start()
 {
     QuestStarted.Broadcast(this);

@@ -43,7 +43,7 @@ public:
     bool PlayerHasCondition();
 
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    UWorld* GetWorld();
+    virtual UWorld* GetWorld() const override;
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAddOneOption, FText, Text, const FDialogOption&, Option);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
