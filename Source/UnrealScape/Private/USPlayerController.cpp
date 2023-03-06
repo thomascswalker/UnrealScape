@@ -11,6 +11,9 @@ AUSPlayerController::AUSPlayerController()
     DialogInterpreterComponent =
         CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
     AddOwnedComponent(DialogInterpreterComponent);
+
+    QuestComponent = CreateDefaultSubobject<UQuestComponent>(TEXT("QuestComponent"));
+    AddOwnedComponent(QuestComponent);
 }
 
 void AUSPlayerController::Tick(float DeltaTime)
