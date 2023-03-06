@@ -12,7 +12,7 @@ AStaticEntity::AStaticEntity()
     StaticMeshComponent->SetupAttachment(RootComponent);
 
     InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
-    AddOwnedComponent(InteractiveComponent);
+    InteractiveComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

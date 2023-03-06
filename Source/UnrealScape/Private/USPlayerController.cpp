@@ -10,10 +10,13 @@ AUSPlayerController::AUSPlayerController()
 
     DialogInterpreterComponent =
         CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
-    AddOwnedComponent(DialogInterpreterComponent);
+    DialogInterpreterComponent->SetupAttachment(RootComponent);
 
     QuestComponent = CreateDefaultSubobject<UQuestComponent>(TEXT("QuestComponent"));
-    AddOwnedComponent(QuestComponent);
+    QuestComponent->SetupAttachment(RootComponent);
+
+    InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+    InventoryComponent->SetupAttachment(RootComponent);
 }
 
 void AUSPlayerController::Tick(float DeltaTime)

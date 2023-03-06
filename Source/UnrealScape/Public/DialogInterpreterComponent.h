@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 #include "DialogComponent.h"
 #include "DialogInterpreterComponent.generated.h"
@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDialogStarted, UDialogAsset*, Dial
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogStopped);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class UNREALSCAPE_API UDialogInterpreterComponent : public UActorComponent
+class UNREALSCAPE_API UDialogInterpreterComponent : public USceneComponent
 {
     GENERATED_BODY()
 

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/SplineComponent.h"
 #include "CoreMinimal.h"
@@ -40,8 +39,8 @@ public:
     TArray<FTileInfo> Path;
 };
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class UNREALSCAPE_API UNavigatorComponent : public UActorComponent, public IVisualLoggerDebugSnapshotInterface
+UCLASS(BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class UNREALSCAPE_API UNavigatorComponent : public USceneComponent, public IVisualLoggerDebugSnapshotInterface
 {
     GENERATED_BODY()
 
