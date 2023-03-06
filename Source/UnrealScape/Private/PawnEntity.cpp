@@ -16,19 +16,19 @@ APawnEntity::APawnEntity()
     NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("NavigationComponent"));
     if (NavigatorComponent)
     {
-        AddOwnedComponent(NavigatorComponent);
+        NavigatorComponent->SetupAttachment(RootComponent);
     }
     
     DialogComponent = CreateDefaultSubobject<UDialogComponent>(TEXT("DialogComponent"));
     if (DialogComponent)
     {
-        AddOwnedComponent(DialogComponent);
+        DialogComponent->SetupAttachment(RootComponent);
     }
     
     InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
     if (InteractiveComponent)
     {
-        AddOwnedComponent(InteractiveComponent);
+        InteractiveComponent->SetupAttachment(RootComponent);
     }
 }
 

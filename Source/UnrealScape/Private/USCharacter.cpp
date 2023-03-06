@@ -30,7 +30,7 @@ AUSCharacter::AUSCharacter()
     
     // Navigation
     NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("Navigator"));
-    AddOwnedComponent(NavigatorComponent);
+    NavigatorComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

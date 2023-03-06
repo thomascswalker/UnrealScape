@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "Quest.h"
 
 #include "QuestComponent.generated.h"
 
 
-UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class UNREALSCAPE_API UQuestComponent : public UActorComponent
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class UNREALSCAPE_API UQuestComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UQuestComponent();
+    UQuestComponent(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts
@@ -26,8 +26,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    TArray<UQuest*> Quests;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TArray<TObjectPtr<UQuest>> Quests;
 
 	UFUNCTION(BlueprintCallable)
     UQuest* GetQuest(EQuestList QuestId);

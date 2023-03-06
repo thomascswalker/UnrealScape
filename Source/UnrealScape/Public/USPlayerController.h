@@ -16,6 +16,7 @@
 #include "StaticEntity.h"
 #include "Tile.h"
 #include "USCharacter.h"
+#include "InventoryComponent.h"
 
 #include "USPlayerController.generated.h"
 
@@ -27,11 +28,14 @@ class UNREALSCAPE_API AUSPlayerController : public APlayerController
 public:
     AUSPlayerController();
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
     TObjectPtr<UDialogInterpreterComponent> DialogInterpreterComponent;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Components")
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
     TObjectPtr<UQuestComponent> QuestComponent;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    TObjectPtr<UInventoryComponent> InventoryComponent;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     TObjectPtr<AActor> TargetActor;

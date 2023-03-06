@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 #include "DialogAsset.h"
 #include "DialogComponent.generated.h"
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class UNREALSCAPE_API UDialogComponent : public UActorComponent
+class UNREALSCAPE_API UDialogComponent : public USceneComponent
 {
     GENERATED_BODY()
 
