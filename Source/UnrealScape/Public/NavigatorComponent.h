@@ -76,7 +76,7 @@ public:
     FStoppedSignature Stopped;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
-    float MovementSpeed = 2.f;
+    float MovementSpeed = 100.f;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Navigation")
     float GoalThreshold = 10.f;

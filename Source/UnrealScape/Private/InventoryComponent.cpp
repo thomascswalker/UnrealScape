@@ -63,6 +63,16 @@ UInventorySlot* UInventoryComponent::GetOpenSlot(const FItem& Item)
     return nullptr;
 }
 
+UInventorySlot* UInventoryComponent::GetSlot(int X, int Y)
+{
+    int Index = (Y * 4) + X;
+    if (Index > Slots.Num() - 1)
+    {
+        return nullptr;
+    }
+    return Slots[Index];
+}
+
 bool UInventoryComponent::HasItem(const FItem& Item)
 {
     for (UInventorySlot* Slot : Slots)
@@ -97,11 +107,7 @@ bool UInventoryComponent::AddItem(const FItem& Item)
         return false;
     }
 
-    OpenSlot->Item = Item;
-    OpenSlot->bHasItem = true;
-
-    FString Message = FString::Printf(L"Added item: %s", *Item.Name);
-    INFO(*Message);
+    OpenSlot->SetItem(Item);
 
     return true;
 }
@@ -125,8 +131,7 @@ bool UInventoryComponent::RemoveItem(const FItem& Item)
     {
         if (Slot->Item.Id == Item.Id)
         {
-            Slot->Item = Item;
-            Slot->bHasItem = false;
+            Slot->Clear();
             return true;
         }
     }

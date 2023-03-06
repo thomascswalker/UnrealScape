@@ -20,10 +20,24 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     bool bHasItem = false;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    int Count;
+
+    // Events
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSlotChanged);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FSlotChanged SlotChanged;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     FItem Item;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    int Count;
+    UFUNCTION(BlueprintCallable)
+    void SetItem(const FItem& NewItem);
+
+    UFUNCTION(BlueprintCallable)
+    void Clear();
+
+    UFUNCTION(BlueprintCallable)
+    void SetCount(int NewCount);
 
 };

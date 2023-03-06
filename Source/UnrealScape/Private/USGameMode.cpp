@@ -12,11 +12,5 @@ AUSGameMode::AUSGameMode()
         DefaultPawnClass = PlayerPawnBPClass.Class;
     }
 
-    // set default controller to our Blueprinted controller
-    static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(
-        TEXT("/Game/Blueprints/BP_USPlayerController"));
-    if (PlayerControllerBPClass.Class != NULL)
-    {
-        PlayerControllerClass = PlayerControllerBPClass.Class;
-    }
+    PlayerControllerClass = AUSPlayerController::StaticClass();
 }

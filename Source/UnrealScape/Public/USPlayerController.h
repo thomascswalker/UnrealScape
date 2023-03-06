@@ -3,20 +3,22 @@
 #pragma once
 
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/SplineComponent.h"
+#include "ContextMenu.h"
 #include "CoreMinimal.h"
 #include "DialogInterpreterComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
 #include "InteractiveComponent.h"
 #include "InteractiveData.h"
+#include "InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "QuestComponent.h"
 #include "StaticEntity.h"
 #include "Tile.h"
 #include "USCharacter.h"
-#include "InventoryComponent.h"
 
 #include "USPlayerController.generated.h"
 
@@ -28,15 +30,24 @@ class UNREALSCAPE_API AUSPlayerController : public APlayerController
 public:
     AUSPlayerController();
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    // Components
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Components")
     TObjectPtr<UDialogInterpreterComponent> DialogInterpreterComponent;
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Components")
     TObjectPtr<UQuestComponent> QuestComponent;
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Components")
     TObjectPtr<UInventoryComponent> InventoryComponent;
 
+    // Widgets
+    TSubclassOf<UUserWidget> MainInterfaceClass;
+    TSubclassOf<UUserWidget> ContextMenuClass;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Interface")
+    TObjectPtr<UUserWidget> MainInterface;
+
+    // Interaction
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     TObjectPtr<AActor> TargetActor;
 
@@ -50,6 +61,7 @@ public:
     FInteractRequest CurrentInteractionRequest;
 
     // Overrides
+    virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
     virtual void SetupInputComponent() override;
 
@@ -66,9 +78,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void OnRightClick();
 
-    UFUNCTION(BlueprintNativeEvent, Category = "Actions")
-    void ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
-
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);
 
@@ -83,4 +92,6 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();
+
+    void ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
 };

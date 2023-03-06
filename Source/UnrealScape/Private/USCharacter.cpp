@@ -30,6 +30,7 @@ AUSCharacter::AUSCharacter()
     
     // Navigation
     NavigatorComponent = CreateDefaultSubobject<UNavigatorComponent>(TEXT("Navigator"));
+    NavigatorComponent->MovementSpeed = 10.f;
     NavigatorComponent->SetupAttachment(RootComponent);
 }
 

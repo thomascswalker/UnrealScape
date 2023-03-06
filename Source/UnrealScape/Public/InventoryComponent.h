@@ -27,13 +27,18 @@ public:
     virtual void TickComponent(float DeltaTime, ELevelTick TickType,
                                FActorComponentTickFunction* ThisTickFunction) override;
 
-    UPROPERTY(VisibleAnywhere)
+    // Properties
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     TArray<UInventorySlot*> Slots;
 
+    // Functions
     UFUNCTION(BlueprintCallable)
     void ConstructSlots();
 
     UInventorySlot* GetOpenSlot(const FItem& Item);
+
+    UFUNCTION(BlueprintCallable)
+    UInventorySlot* GetSlot(int X, int Y);
 
     UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue", DisplayName = "Has Item (FItem)"))
     bool HasItem(const FItem& Item);

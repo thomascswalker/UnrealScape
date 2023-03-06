@@ -276,7 +276,7 @@ void UNavigatorComponent::MoveActor()
 #endif
 
     UPawnMovementComponent* MovementComponent = Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
-    MovementComponent->RequestDirectMove(WorldDirection * MovementSpeed * 250.f, false);
+    MovementComponent->RequestDirectMove(WorldDirection * 3.f * 250.f, false);
 }
 
 EFloorLevel UNavigatorComponent::GetFloorAbove()

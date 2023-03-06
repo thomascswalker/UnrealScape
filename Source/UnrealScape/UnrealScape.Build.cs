@@ -9,7 +9,7 @@ public class UnrealScape : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule"});
-
+		PublicDependencyModuleNames.AddRange(new string[] { "UMG", "Slate", "SlateCore" });
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI

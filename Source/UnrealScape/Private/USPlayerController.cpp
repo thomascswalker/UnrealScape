@@ -8,6 +8,7 @@ AUSPlayerController::AUSPlayerController()
     bAttachToPawn = true;
     PrimaryActorTick.bCanEverTick = true;
 
+    // Create components
     DialogInterpreterComponent =
         CreateDefaultSubobject<UDialogInterpreterComponent>(TEXT("DialogInterpreterComponent"));
     DialogInterpreterComponent->SetupAttachment(RootComponent);
@@ -16,7 +17,33 @@ AUSPlayerController::AUSPlayerController()
     QuestComponent->SetupAttachment(RootComponent);
 
     InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+    InventoryComponent->ConstructSlots();
     InventoryComponent->SetupAttachment(RootComponent);
+
+    // Widgets
+    ConstructorHelpers::FClassFinder<UUserWidget> MainInterfaceAsset(TEXT("/Game/Blueprints/UI/WBP_MainInterface"));
+    if (MainInterfaceAsset.Succeeded())
+    {
+        MainInterfaceClass = MainInterfaceAsset.Class;
+    }
+
+    ConstructorHelpers::FClassFinder<UUserWidget> ContextMenuAsset(TEXT("/Game/Blueprints/UI/WBP_ContextMenu"));
+    if (ContextMenuAsset.Succeeded())
+    {
+        ContextMenuClass = ContextMenuAsset.Class;
+    }
+}
+
+void AUSPlayerController::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // Create the main interface widget
+    if (MainInterfaceClass)
+    {
+        MainInterface = CreateWidget<UUserWidget>(this, MainInterfaceClass, FName(TEXT("MainInterfaceWidget")));
+        MainInterface->AddToViewport();
+    }
 }
 
 void AUSPlayerController::Tick(float DeltaTime)
@@ -302,4 +329,20 @@ void AUSPlayerController::UpdateFloorVisibility()
     }
 }
 
-void AUSPlayerController::ContextMenuRequested_Implementation(const TArray<TScriptInterface<IInteractive>>& Entities) {}
+void AUSPlayerController::ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities)
+{
+    // Create a new context menu widget
+    FName Name = FName(TEXT("ContextMenuWidget"));
+    UContextMenu* ContextMenu = CreateWidget<UContextMenu>(this, ContextMenuClass, Name);
+
+    for (const TScriptInterface<IInteractive>& Entity : Entities)
+    {
+        TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(Entity.GetObject(), true);
+        for (FInteractOption& Option : Options)
+        {
+            ContextMenu->AddAction(Entity.GetObject(), Option);
+        }
+    }
+
+    ContextMenu->AddToViewport();
+}
