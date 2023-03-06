@@ -51,8 +51,14 @@ public:
     UPROPERTY(EditDefaultsOnly)
     EQuestList QuestId;
 
+    UPROPERTY(EditDefaultsOnly)
+    FString DisplayName;
+
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     int CurrentStep;
+
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    bool bComplete = false;
 
     // Events
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStarted, UQuest*, Quest);
@@ -78,4 +84,10 @@ public:
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void Reward();
+
+    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
+    bool IsStarted();
+
+    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
+    bool IsComplete();
 };

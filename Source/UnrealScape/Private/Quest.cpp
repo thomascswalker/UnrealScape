@@ -10,12 +10,27 @@ UWorld* UQuest::GetWorld() const
 
 void UQuest::Start()
 {
+    FString Message = FString::Printf(TEXT("Started quest: %s"), *DisplayName);
+    INFO(*Message);
     QuestStarted.Broadcast(this);
 }
 
 void UQuest::Complete()
 {
+    FString Message = FString::Printf(TEXT("Completed quest: %s"), *DisplayName);
+    INFO(*Message);
+    bComplete = true;
     QuestCompleted.Broadcast(this);
+}
+
+bool UQuest::IsStarted()
+{
+    return CurrentStep != 0;
+}
+
+bool UQuest::IsComplete()
+{
+    return bComplete == true;
 }
 
 void UQuest::Update_Implementation(int Step)
