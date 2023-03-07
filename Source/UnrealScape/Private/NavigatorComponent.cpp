@@ -16,6 +16,8 @@ UNavigatorComponent::UNavigatorComponent()
     // off to improve performance if you don't need them.
     PrimaryComponentTick.bCanEverTick = true;
 
+    MovementSpeed = 2.f;
+
     // Create spline
     Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
     Spline->ClearSplinePoints();
@@ -276,7 +278,7 @@ void UNavigatorComponent::MoveActor()
 #endif
 
     UPawnMovementComponent* MovementComponent = Cast<UPawnMovementComponent>(ControlledPawn->GetMovementComponent());
-    MovementComponent->RequestDirectMove(WorldDirection * 3.f * 250.f, false);
+    MovementComponent->RequestDirectMove(WorldDirection * 2.f * 250.f, false);
 }
 
 EFloorLevel UNavigatorComponent::GetFloorAbove()

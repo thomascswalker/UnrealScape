@@ -73,7 +73,6 @@ void AGrid::ConstructTileActors()
             const bool BlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Terrain, TraceParams);
             if (BlockingHit)
             {
-                INFO(FString::FromInt(HitResult.Location.Z));
                 TileInfo.WorldPosition.Z = HitResult.Location.Z;
             }
 
