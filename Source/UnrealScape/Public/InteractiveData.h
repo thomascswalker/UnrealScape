@@ -6,7 +6,7 @@
 
 #include "InteractiveData.generated.h"
 
-#define DEFAULT_INTERACT_DISTANCE 112.5f
+#define DEFAULT_INTERACT_DISTANCE 87.5f
 
 USTRUCT(BlueprintType, Blueprintable)
 struct FInteractOption : public FTableRowBase
