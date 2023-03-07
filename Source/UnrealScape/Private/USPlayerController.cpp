@@ -7,6 +7,8 @@ AUSPlayerController::AUSPlayerController()
     bShowMouseCursor = true;
     bAttachToPawn = true;
     PrimaryActorTick.bCanEverTick = true;
+    bEnableMouseOverEvents = true;
+    DefaultClickTraceChannel = ECC_Interactive;
 
     // Create components
     DialogInterpreterComponent =
@@ -19,6 +21,9 @@ AUSPlayerController::AUSPlayerController()
     InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
     InventoryComponent->ConstructSlots();
     InventoryComponent->SetupAttachment(RootComponent);
+
+    HintComponent = CreateDefaultSubobject<UHintComponent>(TEXT("HintComponent"));
+    HintComponent->SetupAttachment(RootComponent);
 
     // Widgets
     ConstructorHelpers::FClassFinder<UUserWidget> MainInterfaceAsset(TEXT("/Game/Blueprints/UI/WBP_MainInterface"));

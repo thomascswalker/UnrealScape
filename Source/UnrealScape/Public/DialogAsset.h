@@ -39,9 +39,6 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void Communicate(int Step);
 
-    UFUNCTION(BlueprintCallable)
-    bool PlayerHasCondition();
-
     UFUNCTION(BlueprintCallable, BlueprintPure)
     virtual UWorld* GetWorld() const override;
 

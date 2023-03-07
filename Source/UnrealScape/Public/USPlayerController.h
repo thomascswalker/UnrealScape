@@ -10,6 +10,7 @@
 #include "DialogInterpreterComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Grid.h"
+#include "HintComponent.h"
 #include "InteractiveComponent.h"
 #include "InteractiveData.h"
 #include "InventoryComponent.h"
@@ -39,6 +40,9 @@ public:
 
     UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Components")
     TObjectPtr<UInventoryComponent> InventoryComponent;
+
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Components")
+    TObjectPtr<UHintComponent> HintComponent;
 
     // Widgets
     TSubclassOf<UUserWidget> MainInterfaceClass;

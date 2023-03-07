@@ -11,16 +11,3 @@ UWorld* UDialogAsset::GetWorld() const
 {
     return GetOuter()->GetWorld();
 }
-
-bool UDialogAsset::PlayerHasCondition()
-{
-    APlayerController* Controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-    if (!Controller)
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
