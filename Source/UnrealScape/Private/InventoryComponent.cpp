@@ -29,11 +29,18 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UInventoryComponent::ConstructSlots()
 {
+    static ConstructorHelpers::FClassFinder<UInventorySlot> InventorySlotAsset(
+        TEXT("/Game/Blueprints/Items/BP_InventorySlot"));
+    if (!InventorySlotAsset.Succeeded())
+    {
+        return;
+    }
+
     for (int i = 0; i < 28; i++)
     {
         FString Index = FString::FromInt(i);
         FString Name = FString::Printf(L"Slot_%i", *Index);
-        UInventorySlot* Slot = NewObject<UInventorySlot>(this, UInventorySlot::StaticClass(), FName(*Name));
+        UInventorySlot* Slot = NewObject<UInventorySlot>(this, InventorySlotAsset.Class, FName(*Name));
         if (!Slot)
         {
             FATAL(L"Unable to create UInventorySlot");

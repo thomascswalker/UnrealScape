@@ -2,7 +2,13 @@
 
 #include "ContextMenu.h"
 
-void UContextMenu::AddAction_Implementation(const TScriptInterface<IInteractive>& Entity, const FInteractOption& Option)
+void UContextMenu::AddEntityOption_Implementation(const TScriptInterface<IInteractive>& Entity,
+                                                  const FInteractOption Option)
+{
+    return;
+}
+
+void UContextMenu::AddInventorySlotOption_Implementation(const UInventorySlot* InventorySlot, const EItemOptions Option)
 {
     return;
 }

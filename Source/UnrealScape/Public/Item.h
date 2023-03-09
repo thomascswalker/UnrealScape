@@ -9,6 +9,24 @@
 
 #include "Item.generated.h"
 
+UENUM(BlueprintType)
+enum class EItemOptions : uint8
+{
+    Use,
+    Equip,
+    Wield,
+    Examine,
+    Drop
+};
+
+UENUM(BlueprintType)
+enum class EItemEquipType : uint8
+{
+    None,
+    Weapon,
+    Armor
+};
+
 USTRUCT(BlueprintType, Blueprintable)
 struct FItem : public FTableRowBase
 {
@@ -25,6 +43,9 @@ public:
     bool bEquipable;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
+    EItemEquipType EquipType;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
     bool bStackable;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
@@ -34,5 +55,5 @@ public:
     TObjectPtr<UTexture2D> Icon;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
-    TArray<FInteractOption> Options;
+    TArray<EItemOptions> Options;
 };

@@ -9,9 +9,6 @@
 
 #include "InventorySlot.generated.h"
 
-/**
- * 
- */
 UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType, Meta = (ShowWorldContextPin))
 class UNREALSCAPE_API UInventorySlot : public UObject
 {
@@ -40,4 +37,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetCount(int NewCount);
 
+    UFUNCTION(BlueprintCallable)
+    TArray<EItemOptions> GetOptions();
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    void OptionPressed(const EItemOptions Option);
 };

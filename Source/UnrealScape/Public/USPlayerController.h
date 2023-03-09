@@ -97,5 +97,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();
 
-    void ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
+    UFUNCTION(BlueprintCallable, Category = "GUI")
+    void EntityContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
+
+    UFUNCTION(BlueprintCallable, Category = "GUI")
+    void ItemContextMenuRequested(UInventorySlot* InventorySlot);
 };
