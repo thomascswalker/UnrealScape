@@ -185,7 +185,7 @@ void AUSPlayerController::OnRightClick()
 
     if (Entities.Num() > 0)
     {
-        ContextMenuRequested(Entities);
+        EntityContextMenuRequested(Entities);
     }
 }
 
@@ -334,7 +334,7 @@ void AUSPlayerController::UpdateFloorVisibility()
     }
 }
 
-void AUSPlayerController::ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities)
+void AUSPlayerController::EntityContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities)
 {
     // Create a new context menu widget
     FName Name = FName(TEXT("ContextMenuWidget"));
@@ -345,8 +345,22 @@ void AUSPlayerController::ContextMenuRequested(const TArray<TScriptInterface<IIn
         TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(Entity.GetObject(), true);
         for (FInteractOption& Option : Options)
         {
-            ContextMenu->AddAction(Entity.GetObject(), Option);
+            ContextMenu->AddEntityOption(Entity.GetObject(), Option);
         }
+    }
+
+    ContextMenu->AddToViewport();
+}
+
+void AUSPlayerController::ItemContextMenuRequested(UInventorySlot* InventorySlot)
+{
+    // Create a new context menu widget
+    FName Name = FName(TEXT("ContextMenuWidget"));
+    UContextMenu* ContextMenu = CreateWidget<UContextMenu>(this, ContextMenuClass, Name);
+
+    for (EItemOptions Option : InventorySlot->GetOptions())
+    {
+        ContextMenu->AddInventorySlotOption(InventorySlot, Option);
     }
 
     ContextMenu->AddToViewport();
