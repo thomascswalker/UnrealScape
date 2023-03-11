@@ -11,9 +11,6 @@
 UENUM(BlueprintType)
 enum class EQuestList : uint8
 {
-    CooksAssistant,
-    RestlessGhost,
-    SheepShearer,
     TutorialIsland
 };
 
@@ -73,21 +70,12 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     virtual UWorld* GetWorld() const override;
 
-    UFUNCTION(BlueprintCallable)
     void Start();
-
-    UFUNCTION(BlueprintCallable)
     void Complete();
 
-    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    UFUNCTION(BlueprintNativeEvent)
     void Update(int Step);
 
-    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    UFUNCTION(BlueprintNativeEvent)
     void Reward();
-
-    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
-    bool IsStarted();
-
-    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
-    bool IsComplete();
 };
