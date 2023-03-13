@@ -23,16 +23,6 @@ void UQuest::Complete()
     QuestCompleted.Broadcast(this);
 }
 
-bool UQuest::IsStarted()
-{
-    return CurrentStep != 0;
-}
-
-bool UQuest::IsComplete()
-{
-    return bComplete == true;
-}
-
 void UQuest::Update_Implementation(int Step)
 {
     INFO(L"Default construction. Implement this!");

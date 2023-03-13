@@ -38,6 +38,9 @@ public:
     void SetCount(int NewCount);
 
     UFUNCTION(BlueprintCallable)
+    void AddCount(int NewCount);
+
+    UFUNCTION(BlueprintCallable)
     TArray<EItemOptions> GetOptions();
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

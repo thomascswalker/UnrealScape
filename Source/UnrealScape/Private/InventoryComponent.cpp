@@ -106,29 +106,43 @@ bool UInventoryComponent::HasItemId(int Id)
     return false;
 }
 
-bool UInventoryComponent::AddItem(const FItem& Item)
+bool UInventoryComponent::AddItem(const FItem& Item, int Count)
 {
-    UInventorySlot* OpenSlot = GetOpenSlot(Item);
-    if (OpenSlot == nullptr)
+    UInventorySlot* Slot = GetOpenSlot(Item);
+    if (!Slot)
     {
         return false;
     }
 
-    OpenSlot->SetItem(Item);
-
-    return true;
+    if (Slot->bHasItem && Item.bStackable)
+    {
+        Slot->AddCount(Count);
+        ItemAdded.Broadcast(Item, Count);
+        return true;
+    }
+    else
+    {
+        Slot->SetItem(Item);
+        if (Item.bStackable)
+        {
+            Slot->SetCount(Count);
+        }
+        ItemAdded.Broadcast(Item, Count);
+        return true;
+    }
+    return false;
 }
 
-bool UInventoryComponent::AddUniqueItem(const FItem& Item)
+bool UInventoryComponent::AddUniqueItem(const FItem& Item, int Count)
 {
     if (HasItem(Item))
     {
         return false;
     }
-    return AddItem(Item);
+    return AddItem(Item, Count);
 }
 
-bool UInventoryComponent::RemoveItem(const FItem& Item)
+bool UInventoryComponent::RemoveItem(const FItem& Item, int Count)
 {
     if (!HasItem(Item))
     {
@@ -139,6 +153,7 @@ bool UInventoryComponent::RemoveItem(const FItem& Item)
         if (Slot->Item.Id == Item.Id)
         {
             Slot->Clear();
+            ItemRemoved.Broadcast(Item, Count);
             return true;
         }
     }

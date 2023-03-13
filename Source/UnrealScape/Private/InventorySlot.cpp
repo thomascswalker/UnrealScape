@@ -21,6 +21,12 @@ void UInventorySlot::SetCount(int NewCount)
     SlotChanged.Broadcast();
 }
 
+void UInventorySlot::AddCount(int NewCount)
+{
+    Count += NewCount;
+    SlotChanged.Broadcast();
+}
+
 TArray<EItemOptions> UInventorySlot::GetOptions()
 {
     if (!bHasItem)

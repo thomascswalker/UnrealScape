@@ -31,6 +31,14 @@ public:
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     TArray<UInventorySlot*> Slots;
 
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemAdded, const FItem&, Item, int, Count);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FItemAdded ItemAdded;
+
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemRemoved, const FItem&, Item, int, Count);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FItemRemoved ItemRemoved;
+
     // Functions
     UFUNCTION(BlueprintCallable)
     void ConstructSlots();
@@ -47,11 +55,11 @@ public:
     bool HasItemId(int Id);
 
     UFUNCTION(BlueprintCallable)
-    bool AddItem(const FItem& Item);
+    bool AddItem(const FItem& Item, int Count);
 
     UFUNCTION(BlueprintCallable)
-    bool AddUniqueItem(const FItem& Item);
+    bool AddUniqueItem(const FItem& Item, int Count);
 
     UFUNCTION(BlueprintCallable)
-    bool RemoveItem(const FItem& Item);
+    bool RemoveItem(const FItem& Item, int Count);
 };

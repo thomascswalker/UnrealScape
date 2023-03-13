@@ -39,6 +39,7 @@ void APawnEntity::BeginPlay() {}
 void APawnEntity::Tick(float DeltaTime) {}
 
 void APawnEntity::Interact_Implementation(const FInteractOption& Option) {}
+void APawnEntity::Interrupt_Implementation() {}
 
 FVector APawnEntity::GetFloor_Implementation()
 {
