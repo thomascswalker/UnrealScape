@@ -200,6 +200,16 @@ void AUSPlayerController::Move(const FVector Location)
 
     // Stop any existing dialog
     DialogInterpreterComponent->Stop();
+    // Stop any existing interaction
+    if (bIsInteracting)
+    {
+        INFO(L"Cancelling interaction.");
+        InteractionComplete();
+        if (TargetEntity)
+        {
+            IInteractive::Execute_Interrupt(TargetEntity.GetObject());
+        }
+    }
 
     FNavigationRequest Request;
 
@@ -228,7 +238,12 @@ void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
     // Stop any existing interaction
     if (bIsInteracting)
     {
+        INFO(L"Cancelling interaction.");
         InteractionComplete();
+        if (TargetEntity)
+        {
+            IInteractive::Execute_Interrupt(TargetEntity.GetObject());
+        }
     }
 
     if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
@@ -307,6 +322,7 @@ void AUSPlayerController::InteractionComplete()
     {
         InteractiveComponent->Complete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
     }
+    IInteractive::Execute_Interrupt(TargetEntity.GetObject());
 }
 
 void AUSPlayerController::UpdateFloorVisibility()

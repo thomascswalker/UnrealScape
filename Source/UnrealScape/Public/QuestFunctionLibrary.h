@@ -19,7 +19,7 @@ UCLASS()
 class UNREALSCAPE_API UQuestFunctionLibrary : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
-
+public:
     static UQuestComponent* GetQuestComponent(const UObject* Context);
 
     UFUNCTION(BlueprintPure, Category = "Quests", meta = (HidePin = "Context", DefaultToSelf = "Context"))

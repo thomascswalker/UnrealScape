@@ -73,9 +73,15 @@ public:
     void Start();
     void Complete();
 
-    UFUNCTION(BlueprintNativeEvent)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     void Update(int Step);
 
-    UFUNCTION(BlueprintNativeEvent)
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     void Reward();
+
+    UFUNCTION(BlueprintCallable, meta = (Name = "GetNameOptions"))
+    void Test(FString Name) { INFO(*Name); }
+
+    UFUNCTION(CallInEditor)
+    TArray<FString> GetNameOptions() const { return {TEXT("N1"), TEXT("N2"), TEXT("N3")}; }
 };

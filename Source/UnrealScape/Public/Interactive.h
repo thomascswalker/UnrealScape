@@ -25,6 +25,9 @@ public:
     void Interact(const FInteractOption& Option);
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void Interrupt();
+
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     FVector GetFloor();
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)

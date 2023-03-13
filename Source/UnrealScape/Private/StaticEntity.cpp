@@ -28,6 +28,7 @@ void AStaticEntity::Tick(float DeltaTime)
 }
 
 void AStaticEntity::Interact_Implementation(const FInteractOption& Option) {}
+void AStaticEntity::Interrupt_Implementation() {}
 
 FVector AStaticEntity::GetFloor_Implementation()
 {
