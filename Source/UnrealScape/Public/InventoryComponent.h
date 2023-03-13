@@ -4,8 +4,8 @@
 
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
-
 #include "InventorySlot.h"
+#include "GlobalFunctionLibrary.h"
 
 #include "InventoryComponent.generated.h"
 
@@ -48,6 +48,15 @@ public:
     UFUNCTION(BlueprintCallable)
     UInventorySlot* GetSlot(int X, int Y);
 
+    UFUNCTION(BlueprintCallable)
+    int GetItemCount();
+
+    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
+    bool IsEmpty();
+
+    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
+    bool IsFull();
+
     UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue", DisplayName = "Has Item (FItem)"))
     bool HasItem(const FItem& Item);
 
@@ -61,5 +70,5 @@ public:
     bool AddUniqueItem(const FItem& Item, int Count);
 
     UFUNCTION(BlueprintCallable)
-    bool RemoveItem(const FItem& Item, int Count);
+    void RemoveItem(const FItem& Item, int Count);
 };

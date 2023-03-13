@@ -11,24 +11,24 @@ UWorld* UQuest::GetWorld() const
 void UQuest::Start()
 {
     FString Message = FString::Printf(TEXT("Started quest: %s"), *DisplayName);
-    INFO(*Message);
+    UGlobalFunctionLibrary::AddChatboxMessage(this, FText::FromString(Message));
     QuestStarted.Broadcast(this);
 }
 
 void UQuest::Complete()
 {
     FString Message = FString::Printf(TEXT("Completed quest: %s"), *DisplayName);
-    INFO(*Message);
+    UGlobalFunctionLibrary::AddChatboxMessage(this, FText::FromString(Message));
     bComplete = true;
     QuestCompleted.Broadcast(this);
 }
 
 void UQuest::Update_Implementation(int Step)
 {
-    INFO(L"Default construction. Implement this!");
+    FATAL(L"Default construction. Implement this!");
 }
 
 void UQuest::Reward_Implementation()
 {
-    INFO(L"Default construction. Implement this!");
+    FATAL(L"Default construction. Implement this!");
 }
