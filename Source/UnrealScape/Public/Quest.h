@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "USUtils.h"
+#include "GlobalFunctionLibrary.h"
 
 #include "Quest.generated.h"
 
@@ -78,10 +79,4 @@ public:
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     void Reward();
-
-    UFUNCTION(BlueprintCallable, meta = (Name = "GetNameOptions"))
-    void Test(FString Name) { INFO(*Name); }
-
-    UFUNCTION(CallInEditor)
-    TArray<FString> GetNameOptions() const { return {TEXT("N1"), TEXT("N2"), TEXT("N3")}; }
 };

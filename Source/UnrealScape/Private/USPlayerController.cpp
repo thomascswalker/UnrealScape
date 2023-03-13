@@ -49,6 +49,10 @@ void AUSPlayerController::BeginPlay()
         MainInterface = CreateWidget<UUserWidget>(this, MainInterfaceClass, FName(TEXT("MainInterfaceWidget")));
         MainInterface->AddToViewport();
     }
+
+    // Start the tutorial quest
+    UQuest* TutorialIslandQuest = QuestComponent->GetQuest(EQuestList::TutorialIsland);
+    TutorialIslandQuest->Start();
 }
 
 void AUSPlayerController::Tick(float DeltaTime)
@@ -203,7 +207,6 @@ void AUSPlayerController::Move(const FVector Location)
     // Stop any existing interaction
     if (bIsInteracting)
     {
-        INFO(L"Cancelling interaction.");
         InteractionComplete();
         if (TargetEntity)
         {
@@ -225,7 +228,6 @@ void AUSPlayerController::Move(const FVector Location)
 
 void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
 {
-    INFO(Option.Name);
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
     if (!ControlledPawn)
     {
@@ -238,7 +240,6 @@ void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
     // Stop any existing interaction
     if (bIsInteracting)
     {
-        INFO(L"Cancelling interaction.");
         InteractionComplete();
         if (TargetEntity)
         {
@@ -315,6 +316,11 @@ void AUSPlayerController::InteractionComplete()
 {
     bIsInteracting = false;
     AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+
+    if (!IsValid(TargetEntity.GetObject()))
+    {
+        return;
+    }
 
     UInteractiveComponent* InteractiveComponent =
         IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());

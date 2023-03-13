@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ItemFunctionLibrary.h"
+#include "ItemEntity.h"
 
 UInventoryComponent* UItemFunctionLibrary::GetInventoryComponent(const UObject* Context)
 {
@@ -39,7 +40,7 @@ UDataTable* UItemFunctionLibrary::GetItemDataTable()
     return nullptr;
 }
 
-FItem* UItemFunctionLibrary::GetItemRowFromId(int Id)
+FItem* UItemFunctionLibrary::GetItemPtrFromId(int Id)
 {
     UDataTable* ItemTable = GetItemDataTable();
     if (!ItemTable)
@@ -61,6 +62,27 @@ FItem* UItemFunctionLibrary::GetItemRowFromId(int Id)
     return nullptr;
 }
 
+FDataTableRowHandle UItemFunctionLibrary::GetItemRowHandleFromId(int Id)
+{
+    FDataTableRowHandle Handle;
+    Handle.DataTable = GetItemDataTable();
+    for (FName RowName : Handle.DataTable->GetRowNames())
+    {
+        FItem* Row = Handle.DataTable->FindRow<FItem>(RowName, FString(""));
+        if (!Row)
+        {
+            continue;
+        }
+        if (Row->Id == Id)
+        {
+            Handle.RowName = RowName;
+            return Handle;
+        }
+    }
+
+    return Handle;
+}
+
 bool UItemFunctionLibrary::PlayerCanReceiveItemFromRef(const UObject* Context, const FItem& Item)
 {
     UInventoryComponent* Component = GetInventoryComponent(Context);
@@ -68,17 +90,18 @@ bool UItemFunctionLibrary::PlayerCanReceiveItemFromRef(const UObject* Context, c
     {
         return false;
     }
+
     return Component->GetOpenSlot(Item) != nullptr;
 }
 
 bool UItemFunctionLibrary::PlayerCanReceiveItemFromId(const UObject* Context, int Id)
 {
-    FItem* Item = GetItemRowFromId(Id);
-    if (!Item)
+    FItem* ItemPtr = GetItemPtrFromId(Id);
+    if (!ItemPtr)
     {
         return false;
     }
-    return PlayerCanReceiveItemFromRef(Context, *Item);
+    return PlayerCanReceiveItemFromRef(Context, *ItemPtr);
 }
 
 bool UItemFunctionLibrary::PlayerHasItemByRef(const UObject* Context, const FItem& Item)
@@ -113,10 +136,34 @@ bool UItemFunctionLibrary::GivePlayerItemFromRef(const UObject* Context, const F
 
 bool UItemFunctionLibrary::GivePlayerItemFromId(const UObject* Context, int Id, int Count)
 {
-    FItem* Item = GetItemRowFromId(Id);
-    if (!Item)
+    FItem* ItemPtr = GetItemPtrFromId(Id);
+    if (!ItemPtr)
     {
         return false;
     }
-    return GivePlayerItemFromRef(Context, *Item, Count);
+    return GivePlayerItemFromRef(Context, *ItemPtr, Count);
+}
+
+void UItemFunctionLibrary::SpawnItemAtLocationById(const UObject* Context, int Id, FVector Location, int Count)
+{
+    FItem* ItemPtr = GetItemPtrFromId(Id);
+    if (!ItemPtr)
+    {
+        return;
+    }
+    FItem Item = *ItemPtr;
+    FTransform Transform = FTransform(FRotator::ZeroRotator, Location, FVector::One());
+    AItemEntity* SpawnedItem =
+        Context->GetWorld()->SpawnActorDeferred<AItemEntity>(AItemEntity::StaticClass(), Transform);
+
+    if (!SpawnedItem)
+    {
+        FATAL(L"Failed to spawn.");
+        return;
+    }
+
+    SpawnedItem->ItemRow = GetItemRowHandleFromId(Item.Id);
+    SpawnedItem->Count = Count;
+
+    SpawnedItem->FinishSpawning(Transform);
 }

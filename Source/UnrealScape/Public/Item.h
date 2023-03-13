@@ -6,6 +6,7 @@
 
 #include "InteractiveData.h"
 #include "USUtils.h"
+#include "Engine/StaticMesh.h"
 
 #include "Item.generated.h"
 
@@ -35,6 +36,9 @@ public:
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
     FString Name;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
+    UStaticMesh* Mesh;
 
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
     int Id;

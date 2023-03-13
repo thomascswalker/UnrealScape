@@ -47,20 +47,27 @@ void UInventoryComponent::ConstructSlots()
             continue;
         }
         Slots.Add(Slot);
+        Slot->SlotDropped.AddDynamic(this, &UInventoryComponent::RemoveItem);
     }
 }
 
 UInventorySlot* UInventoryComponent::GetOpenSlot(const FItem& Item)
 {
+    if (IsFull())
+    {
+        return nullptr;
+    }
+
     for (UInventorySlot* Slot : Slots)
     {
+        bool IdMatch = Slot->Item.Id == Item.Id;
         // If the slot is empty and the item is NOT stackable
         if (!Slot->bHasItem && !Item.bStackable)
         {
             return Slot;
         }
         // If the slot is NOT empty, but the item IDs match and the item IS stackable
-        else if (Slot->Item.Id == Item.Id && Item.bStackable)
+        else if (Slot->bHasItem && IdMatch && Item.bStackable)
         {
             return Slot;
         }
@@ -78,6 +85,31 @@ UInventorySlot* UInventoryComponent::GetSlot(int X, int Y)
         return nullptr;
     }
     return Slots[Index];
+}
+
+int UInventoryComponent::GetItemCount()
+{
+    int Count = 0;
+
+    for (UInventorySlot* Slot : Slots)
+    {
+        if (Slot->bHasItem)
+        {
+            Count++;
+        }
+    }
+
+    return Count;
+}
+
+bool UInventoryComponent::IsEmpty()
+{
+    return GetItemCount() == 0;
+}
+
+bool UInventoryComponent::IsFull()
+{
+    return GetItemCount() == 28;
 }
 
 bool UInventoryComponent::HasItem(const FItem& Item)
@@ -109,27 +141,33 @@ bool UInventoryComponent::HasItemId(int Id)
 bool UInventoryComponent::AddItem(const FItem& Item, int Count)
 {
     UInventorySlot* Slot = GetOpenSlot(Item);
-    if (!Slot)
+    
+    // If the slot exists, add to it
+    if (IsValid(Slot))
     {
-        return false;
+        // If the item exists and is stackable, add to its current count
+        if (Slot->bHasItem && Item.bStackable)
+        {
+            Slot->AddCount(Count);
+            ItemAdded.Broadcast(Item, Count);
+        }
+        // Otherwise add the new item and set its count if it's stackable
+        else
+        {
+            Slot->SetItem(Item);
+            if (Item.bStackable)
+            {
+                Slot->SetCount(Count);
+            }
+            ItemAdded.Broadcast(Item, Count);
+        }
+        return true;
     }
 
-    if (Slot->bHasItem && Item.bStackable)
-    {
-        Slot->AddCount(Count);
-        ItemAdded.Broadcast(Item, Count);
-        return true;
-    }
-    else
-    {
-        Slot->SetItem(Item);
-        if (Item.bStackable)
-        {
-            Slot->SetCount(Count);
-        }
-        ItemAdded.Broadcast(Item, Count);
-        return true;
-    }
+    // Otherwise if the slot isn't found, our inventory is full
+    FText Message = FText::FromString(TEXT("Inventory is full."));
+    UGlobalFunctionLibrary::AddChatboxMessage(this, Message);
+
     return false;
 }
 
@@ -142,11 +180,11 @@ bool UInventoryComponent::AddUniqueItem(const FItem& Item, int Count)
     return AddItem(Item, Count);
 }
 
-bool UInventoryComponent::RemoveItem(const FItem& Item, int Count)
+void UInventoryComponent::RemoveItem(const FItem& Item, int Count)
 {
     if (!HasItem(Item))
     {
-        return false;
+        return;
     }
     for (UInventorySlot* Slot : Slots)
     {
@@ -154,9 +192,7 @@ bool UInventoryComponent::RemoveItem(const FItem& Item, int Count)
         {
             Slot->Clear();
             ItemRemoved.Broadcast(Item, Count);
-            return true;
+            return;
         }
     }
-
-    return false;
 }

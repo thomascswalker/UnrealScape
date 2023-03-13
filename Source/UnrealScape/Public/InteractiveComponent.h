@@ -27,7 +27,7 @@ public:
 
     // Properties
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    float InteractDistance = DEFAULT_INTERACT_DISTANCE;
+    float InteractDistance = INTERACT_ONE_TILE;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     FString Name = "Object";

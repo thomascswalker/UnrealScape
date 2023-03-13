@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-
 #include "Item.h"
 
 #include "InventorySlot.generated.h"
@@ -24,6 +23,10 @@ public:
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSlotChanged);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
     FSlotChanged SlotChanged;
+
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSlotDropped, const FItem&, OutItem, int, OutCount);
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
+    FSlotDropped SlotDropped;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     FItem Item;

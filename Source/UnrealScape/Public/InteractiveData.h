@@ -6,7 +6,9 @@
 
 #include "InteractiveData.generated.h"
 
-#define DEFAULT_INTERACT_DISTANCE 87.5f
+#define INTERACT_SAME_TILE 12.5f;
+#define INTERACT_ONE_TILE 50.f + INTERACT_SAME_TILE;
+#define INTERACT_TWO_TILES 100.f + INTERACT_SAME_TILE;
 
 USTRUCT(BlueprintType, Blueprintable)
 struct FInteractOption : public FTableRowBase
@@ -22,6 +24,15 @@ public:
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
     bool bVisible = true;
+
+    FInteractOption(FString InName = "", bool UseInteractionDistance = true)
+    {
+        Name = InName;
+        bUseInteractionDistance = UseInteractionDistance;
+        bVisible = true;
+    }
+    static FInteractOption Pickup() { return FInteractOption("Pickup"); }
+    static FInteractOption Examine() { return FInteractOption("Examine", false); }
 };
 
 USTRUCT(BlueprintType)
@@ -54,7 +65,7 @@ public:
 
     // Properties
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    float InteractDistance = DEFAULT_INTERACT_DISTANCE;
+    float InteractDistance = INTERACT_ONE_TILE;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     FString Name = "Object";

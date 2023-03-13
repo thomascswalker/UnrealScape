@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "InventorySlot.h"
+#include "ItemFunctionLibrary.h"
 
 void UInventorySlot::SetItem(const FItem& NewItem)
 {
@@ -57,4 +58,18 @@ TArray<EItemOptions> UInventorySlot::GetOptions()
     return Options;
 }
 
-void UInventorySlot::OptionPressed_Implementation(const EItemOptions Option) {}
+void UInventorySlot::OptionPressed_Implementation(const EItemOptions Option)
+{
+    INFO(L"Dropping item.");
+    switch (Option)
+    {
+        case EItemOptions::Drop:
+        {
+            SlotDropped.Broadcast(Item, Count);
+            FVector PlayerLocation = UGlobalFunctionLibrary::GetPlayerLocation(this);
+            UItemFunctionLibrary::SpawnItemAtLocationById(this, Item.Id, PlayerLocation, Count);
+            break;
+        }
+        default: break;
+    }
+}

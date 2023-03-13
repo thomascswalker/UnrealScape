@@ -22,7 +22,8 @@ public:
     static UInventoryComponent* GetInventoryComponent(const UObject* Context);
 
     static UDataTable* GetItemDataTable();
-    static FItem* GetItemRowFromId(int Id);
+    static FItem* GetItemPtrFromId(int Id);
+    static FDataTableRowHandle GetItemRowHandleFromId(int Id);
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", ExpandBoolAsExecs = "ReturnValue"))
@@ -48,4 +49,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", Count = "1", ExpandBoolAsExecs = "ReturnValue"))
     static bool GivePlayerItemFromId(const UObject* Context, int Id, int Count);
+
+    UFUNCTION(BlueprintCallable, Category = "Items",
+              meta = (HidePin = "Context", DefaultToSelf = "Context", Count = "1"))
+    static void SpawnItemAtLocationById(const UObject* Context, int Id, FVector Location, int Count);
 };

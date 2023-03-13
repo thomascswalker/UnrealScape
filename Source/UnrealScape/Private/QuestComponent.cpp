@@ -28,8 +28,6 @@ UQuestComponent::UQuestComponent(const FObjectInitializer& ObjectInitializer) : 
 void UQuestComponent::BeginPlay()
 {
     Super::BeginPlay();
-
-    // ...
 }
 
 // Called every frame
