@@ -8,10 +8,10 @@ RuneScape 2 rebuilt in Unreal Engine 5.
 - [x] Movement
 - [x] Task system
 - [x] Interaction
-- [ ] Inventory
-- [ ] Items
+- [x] Inventory
+- [x] Items
 - [ ] Combat
 - [ ] Skills
-- [ ] NPCs
+- [x] NPCs
 - [ ] Shops
-- [ ] Quests
+- [x] Quests
