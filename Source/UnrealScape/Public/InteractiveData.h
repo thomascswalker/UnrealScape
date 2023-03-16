@@ -33,6 +33,10 @@ public:
     }
     static FInteractOption Pickup() { return FInteractOption("Pickup"); }
     static FInteractOption Examine() { return FInteractOption("Examine", false); }
+    static FInteractOption Use() { return FInteractOption("Use", false); }
+    static FInteractOption Drop() { return FInteractOption("Drop", false); }
+    static FInteractOption Equip() { return FInteractOption("Equip", false); }
+    static FInteractOption Wield() { return FInteractOption("Wield", false); }
 };
 
 USTRUCT(BlueprintType)

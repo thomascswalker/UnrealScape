@@ -29,7 +29,7 @@ enum class EItemEquipType : uint8
 };
 
 USTRUCT(BlueprintType, Blueprintable)
-struct FItem : public FTableRowBase
+struct FItemDef : public FTableRowBase
 {
 public:
     GENERATED_BODY()

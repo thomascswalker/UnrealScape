@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Item.h"
+#include "Interactive.h"
 
 #include "InventorySlot.generated.h"
 
 UCLASS(DefaultToInstanced, EditInlineNew, Blueprintable, BlueprintType, Meta = (ShowWorldContextPin))
-class UNREALSCAPE_API UInventorySlot : public UObject
+class UNREALSCAPE_API UInventorySlot : public UObject, public IInteractive
 {
 	GENERATED_BODY()
 public:
@@ -24,15 +25,15 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
     FSlotChanged SlotChanged;
 
-    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSlotDropped, const FItem&, OutItem, int, OutCount);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSlotDropped, const FItemDef&, OutItem, int, OutCount);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
     FSlotDropped SlotDropped;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-    FItem Item;
+    FItemDef Item;
 
     UFUNCTION(BlueprintCallable)
-    void SetItem(const FItem& NewItem);
+    void SetItem(const FItemDef& NewItem);
 
     UFUNCTION(BlueprintCallable)
     void Clear();
@@ -43,9 +44,12 @@ public:
     UFUNCTION(BlueprintCallable)
     void AddCount(int NewCount);
 
-    UFUNCTION(BlueprintCallable)
-    TArray<EItemOptions> GetOptions();
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    TArray<FInteractOption> GetOptions(bool bVisibleOnly = true);
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-    void OptionPressed(const EItemOptions Option);
+    void OptionPressed(const FInteractOption& Option);
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    FString GetName();
 };

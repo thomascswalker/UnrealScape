@@ -10,37 +10,13 @@ UInventoryComponent::UInventoryComponent(const FObjectInitializer& ObjectInitial
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-// Called when the game starts
-void UInventoryComponent::BeginPlay()
-{
-    Super::BeginPlay();
-
-    // ...
-}
-
-// Called every frame
-void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                        FActorComponentTickFunction* ThisTickFunction)
-{
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-    // ...
-}
-
 void UInventoryComponent::ConstructSlots()
 {
-    static ConstructorHelpers::FClassFinder<UInventorySlot> InventorySlotAsset(
-        TEXT("/Game/Blueprints/Items/BP_InventorySlot"));
-    if (!InventorySlotAsset.Succeeded())
-    {
-        return;
-    }
-
     for (int i = 0; i < 28; i++)
     {
         FString Index = FString::FromInt(i);
         FString Name = FString::Printf(L"Slot_%i", *Index);
-        UInventorySlot* Slot = NewObject<UInventorySlot>(this, InventorySlotAsset.Class, FName(*Name));
+        UInventorySlot* Slot = NewObject<UInventorySlot>(this, UInventorySlot::StaticClass(), FName(*Name));
         if (!Slot)
         {
             FATAL(L"Unable to create UInventorySlot");
@@ -51,7 +27,7 @@ void UInventoryComponent::ConstructSlots()
     }
 }
 
-UInventorySlot* UInventoryComponent::GetOpenSlot(const FItem& Item)
+UInventorySlot* UInventoryComponent::GetOpenSlot(const FItemDef& Item)
 {
     if (IsFull())
     {
@@ -112,7 +88,7 @@ bool UInventoryComponent::IsFull()
     return GetItemCount() == 28;
 }
 
-bool UInventoryComponent::HasItem(const FItem& Item)
+bool UInventoryComponent::HasItem(const FItemDef& Item)
 {
     for (UInventorySlot* Slot : Slots)
     {
@@ -138,7 +114,7 @@ bool UInventoryComponent::HasItemId(int Id)
     return false;
 }
 
-bool UInventoryComponent::AddItem(const FItem& Item, int Count)
+bool UInventoryComponent::AddItem(const FItemDef& Item, int Count)
 {
     UInventorySlot* Slot = GetOpenSlot(Item);
     
@@ -171,7 +147,7 @@ bool UInventoryComponent::AddItem(const FItem& Item, int Count)
     return false;
 }
 
-bool UInventoryComponent::AddUniqueItem(const FItem& Item, int Count)
+bool UInventoryComponent::AddUniqueItem(const FItemDef& Item, int Count)
 {
     if (HasItem(Item))
     {
@@ -180,7 +156,7 @@ bool UInventoryComponent::AddUniqueItem(const FItem& Item, int Count)
     return AddItem(Item, Count);
 }
 
-void UInventoryComponent::RemoveItem(const FItem& Item, int Count)
+void UInventoryComponent::RemoveItem(const FItemDef& Item, int Count)
 {
     if (!HasItem(Item))
     {

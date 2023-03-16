@@ -18,8 +18,5 @@ class UNREALSCAPE_API UContextMenu : public UUserWidget
     GENERATED_BODY()
 public:
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-    void AddEntityOption(const TScriptInterface<IInteractive>& Entity, const FInteractOption Option);
-
-    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-    void AddInventorySlotOption(const UInventorySlot* InventorySlot, const EItemOptions Option);
+    void AddOption(const TScriptInterface<IInteractive>& Entity, const FInteractOption Option);
 };

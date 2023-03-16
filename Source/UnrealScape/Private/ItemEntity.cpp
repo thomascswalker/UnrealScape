@@ -12,10 +12,10 @@ AItemEntity::AItemEntity()
     StaticMeshComponent->SetupAttachment(RootComponent);
 
     InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
-    
+
     InteractiveComponent->SetupAttachment(RootComponent);
 
-    ItemRow.DataTable = UItemFunctionLibrary::GetItemDataTable();
+    ItemDataTable = UItemFunctionLibrary::GetItemDataTable();
 }
 
 // Called when the game starts or when spawned
@@ -26,12 +26,15 @@ void AItemEntity::BeginPlay()
 
 void AItemEntity::OnConstruction(const FTransform& Transform)
 {
-    INFO(*ItemRow.DataTable.GetName());
-    FItem* ItemPtr = ItemRow.DataTable->FindRow<FItem>(ItemRow.RowName, TEXT(""));
-    INFO(*ItemRow.RowName.ToString());
+    if (!ItemDataTable)
+    {
+        FATAL(L"No Item Data Table (DT_ItemDefinitions) found.");
+        return;
+    }
+    FItemDef* ItemPtr = ItemDataTable->FindRow<FItemDef>(GetItemRowName(), TEXT(""));
     if (ItemPtr)
     {
-        FItem Item = *ItemPtr;
+        FItemDef Item = *ItemPtr;
         StaticMeshComponent->SetStaticMesh(Item.Mesh);
         StaticMeshComponent->SetCollisionProfileName(TEXT("InteractiveOverlap"));
 
@@ -53,12 +56,12 @@ void AItemEntity::Tick(float DeltaTime)
 
 void AItemEntity::Interact_Implementation(const FInteractOption& Option)
 {
-    FItem* ItemPtr = GetItem();
+    FItemDef* ItemPtr = GetItem();
     if (!ItemPtr)
     {
         return;
     }
-    FItem Item = *ItemPtr;
+    FItemDef Item = *ItemPtr;
     if (Option.Name == "Pickup")
     {
         bool Result = UItemFunctionLibrary::GivePlayerItemFromId(this, Item.Id, Count);
@@ -66,7 +69,6 @@ void AItemEntity::Interact_Implementation(const FInteractOption& Option)
         {
             return;
         }
-        InteractiveComponent->Complete.Broadcast();
         Destroy();
     }
     else if (Option.Name == "Examine")
@@ -136,8 +138,47 @@ UMeshComponent* AItemEntity::GetMeshComponent_Implementation()
     return StaticMeshComponent;
 }
 
-FItem* AItemEntity::GetItem()
+FItemDef* AItemEntity::GetItem()
 {
-    FItem* ItemPtr = ItemRow.DataTable->FindRow<FItem>(ItemRow.RowName, TEXT(""));
+    FItemDef* ItemPtr = ItemDataTable->FindRow<FItemDef>(GetItemRowName(), TEXT(""));
     return ItemPtr;
+}
+
+FName AItemEntity::GetItemRowName()
+{
+    for (const FName& RowName : ItemDataTable->GetRowNames())
+    {
+        FItemDef* ItemPtr = ItemDataTable->FindRow<FItemDef>(RowName, TEXT(""));
+        if (!ItemPtr)
+        {
+            continue;
+        }
+        FItemDef ItemDef = *ItemPtr;
+        if (ItemDef.Name == ItemName)
+        {
+            return RowName;
+        }
+    }
+    return FName();
+}
+
+TArray<FString> AItemEntity::GetItemDisplayNames()
+{
+    TArray<FString> Names;
+    if (!ItemDataTable)
+    {
+        return Names;
+    }
+
+    for (const FName& RowName : ItemDataTable->GetRowNames())
+    {
+        FItemDef* ItemPtr = ItemDataTable->FindRow<FItemDef>(RowName, TEXT(""));
+        if (!ItemPtr)
+        {
+            continue;
+        }
+        FItemDef Item = *ItemPtr;
+        Names.Add(Item.Name);
+    }
+    return Names;
 }
