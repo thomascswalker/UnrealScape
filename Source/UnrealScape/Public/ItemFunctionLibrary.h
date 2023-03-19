@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+//#include "Engine/Plugins/Editor/EditorScriptingUtilities/Source/EditorScriptingUtilities/Public/EditorAssetLibrary.h"
 #include "InventoryComponent.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
@@ -21,9 +22,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Items", meta = (HidePin = "Context", DefaultToSelf = "Context"))
     static UInventoryComponent* GetInventoryComponent(const UObject* Context);
 
-    static UDataTable* GetItemDataTable();
-    static FItemDef* GetItemPtrFromId(int Id);
-    static FDataTableRowHandle GetItemRowHandleFromId(int Id);
+    static UDataTable* GetItemDataTable(const UObject* Context);
+    static FItemDef* GetItemPtrFromId(const UObject* Context, int Id);
+    static FDataTableRowHandle GetItemRowHandleFromId(const UObject* Context, int Id);
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", ExpandBoolAsExecs = "ReturnValue"))
