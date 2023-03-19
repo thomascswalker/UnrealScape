@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+//#include "Engine/Plugins/Editor/EditorScriptingUtilities/Source/EditorScriptingUtilities/Public/EditorAssetLibrary.h"
 #include "InventoryComponent.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
@@ -21,13 +22,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Items", meta = (HidePin = "Context", DefaultToSelf = "Context"))
     static UInventoryComponent* GetInventoryComponent(const UObject* Context);
 
-    static UDataTable* GetItemDataTable();
-    static FItem* GetItemPtrFromId(int Id);
-    static FDataTableRowHandle GetItemRowHandleFromId(int Id);
+    static UDataTable* GetItemDataTable(const UObject* Context);
+    static FItemDef* GetItemPtrFromId(const UObject* Context, int Id);
+    static FDataTableRowHandle GetItemRowHandleFromId(const UObject* Context, int Id);
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", ExpandBoolAsExecs = "ReturnValue"))
-    static bool PlayerCanReceiveItemFromRef(const UObject* Context, const FItem& Item);
+    static bool PlayerCanReceiveItemFromDef(const UObject* Context, const FItemDef& Item);
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", ExpandBoolAsExecs = "ReturnValue"))
@@ -35,7 +36,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", ExpandBoolAsExecs = "ReturnValue"))
-    static bool PlayerHasItemByRef(const UObject* Context, const FItem& Item);
+    static bool PlayerHasItemByDef(const UObject* Context, const FItemDef& Item);
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", ExpandBoolAsExecs = "ReturnValue"))
@@ -44,7 +45,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", AutoCreateRefTerm = "Item", DefaultToSelf = "Context", Count = "1",
                       ExpandBoolAsExecs = "ReturnValue"))
-    static bool GivePlayerItemFromRef(const UObject* Context, const FItem& Item, int Count);
+    static bool GivePlayerItemFromDef(const UObject* Context, const FItemDef& Item, int Count);
 
     UFUNCTION(BlueprintCallable, Category = "Items",
               meta = (HidePin = "Context", DefaultToSelf = "Context", Count = "1", ExpandBoolAsExecs = "ReturnValue"))

@@ -50,6 +50,9 @@ void AUSPlayerController::BeginPlay()
         MainInterface->AddToViewport();
     }
 
+    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
+    ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(this, &AUSPlayerController::MovementComplete);
+
     // Start the tutorial quest
     UQuest* TutorialIslandQuest = QuestComponent->GetQuest(EQuestList::TutorialIsland);
     TutorialIslandQuest->Start();
@@ -59,6 +62,15 @@ void AUSPlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     UpdateFloorVisibility();
+    if (IsValid(CurrentInteractiveEntity.GetObject()))
+    {
+        GEngine->AddOnScreenDebugMessage(1, 0.1f, FColor::Yellow, *CurrentInteractiveEntity.GetObject()->GetName());
+    }
+
+    if (IsValid(InventoryComponent))
+    {
+        GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Cyan, *FString::FromInt(InventoryComponent->GetItemCount()));
+    }
 }
 
 void AUSPlayerController::SetupInputComponent()
@@ -121,16 +133,11 @@ void AUSPlayerController::OnLeftClick()
         bool bImplements = HitResult.GetActor()->Implements<UInteractive>();
         if (bImplements)
         {
-            TargetActor = HitResult.GetActor();
-            TargetEntity.SetObject(TargetActor);
-            TargetEntity.SetInterface(Cast<IInteractive>(TargetActor));
+            AActor* HitActor = HitResult.GetActor();
+            SetCurrentInteractiveEntity(HitActor);
 
-            if (!TargetActor)
-            {
-                return;
-            }
-
-            TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(TargetEntity.GetObject(), true);
+            TArray<FInteractOption> Options =
+                IInteractive::Execute_GetOptions(CurrentInteractiveEntity.GetObject(), true);
             if (Options.Num() == 0)
             {
                 INFO("Target has no options!");
@@ -146,14 +153,14 @@ void AUSPlayerController::OnLeftClick()
     SingleLineTraceUnderMouseCursor(HitResult, ECC_Terrain);
     if (HitResult.bBlockingHit)
     {
-        TargetActor = nullptr;
+        InterruptInteraction();
         FVector Location = HitResult.Location;
         Move(Location);
     }
-    else
-    {
-        TargetActor = nullptr;
-    }
+
+    // If we don't hit an interactive object, we'll clear the current target actor/entity
+    CurrentInteractiveEntity.SetObject(nullptr);
+    CurrentInteractiveEntity.SetInterface(nullptr);
 }
 
 void AUSPlayerController::OnRightClick()
@@ -189,8 +196,23 @@ void AUSPlayerController::OnRightClick()
 
     if (Entities.Num() > 0)
     {
-        EntityContextMenuRequested(Entities);
+        ContextMenuRequested(Entities);
     }
+}
+
+void AUSPlayerController::InterruptInteraction()
+{
+    // Stop any existing interaction
+    if (IsValid(CurrentInteractiveEntity.GetObject()))
+    {
+        IInteractive::Execute_Interrupt(CurrentInteractiveEntity.GetObject());
+    }
+}
+
+void AUSPlayerController::SetCurrentInteractiveEntity(AActor* Actor) {
+    InterruptInteraction();
+    CurrentInteractiveEntity.SetObject(Actor);
+    CurrentInteractiveEntity.SetInterface(Cast<IInteractive>(Actor));
 }
 
 void AUSPlayerController::Move(const FVector Location)
@@ -204,15 +226,6 @@ void AUSPlayerController::Move(const FVector Location)
 
     // Stop any existing dialog
     DialogInterpreterComponent->Stop();
-    // Stop any existing interaction
-    if (bIsInteracting)
-    {
-        InteractionComplete();
-        if (TargetEntity)
-        {
-            IInteractive::Execute_Interrupt(TargetEntity.GetObject());
-        }
-    }
 
     FNavigationRequest Request;
 
@@ -237,34 +250,12 @@ void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
     // Stop any existing dialog
     DialogInterpreterComponent->Stop();
 
-    // Stop any existing interaction
-    if (bIsInteracting)
-    {
-        InteractionComplete();
-        if (TargetEntity)
-        {
-            IInteractive::Execute_Interrupt(TargetEntity.GetObject());
-        }
-    }
-
-    if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
-    {
-        ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
-    }
-
-    UInteractiveComponent* InteractiveComponent =
-        IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());
-    if (InteractiveComponent->Complete.IsBound())
-    {
-        InteractiveComponent->Complete.Clear();
-    }
-
-    FVector Location = IInteractive::Execute_GetFloor(TargetEntity.GetObject());
+    FVector Location = IInteractive::Execute_GetFloor(CurrentInteractiveEntity.GetObject());
 
     // Offset towards the player
     FVector Direction = (Location - GetPawn()->GetActorLocation()).GetSafeNormal();
 
-    float InteractDistance = IInteractive::Execute_GetInteractDistance(TargetEntity.GetObject());
+    float InteractDistance = IInteractive::Execute_GetInteractDistance(CurrentInteractiveEntity.GetObject());
     Location -= (Direction * InteractDistance);
 
     ControlledPawn->NavigatorComponent->UpdateCurrentGrid();
@@ -275,7 +266,7 @@ void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
     if (bCloseEnough || Option.bUseInteractionDistance == false)
     {
         bIsInteracting = true;
-        IInteractive::Execute_Interact(TargetEntity.GetObject(), Option);
+        IInteractive::Execute_Interact(CurrentInteractiveEntity.GetObject(), Option);
         return;
     }
 
@@ -283,52 +274,17 @@ void AUSPlayerController::MoveAndInteract(const FInteractOption& Option)
     Request.End = Location;
     if (ControlledPawn->NavigatorComponent->CanMoveToLocation(Request))
     {
-        if (ControlledPawn->NavigatorComponent->ReachedDestination.IsBound())
-        {
-            ControlledPawn->NavigatorComponent->ReachedDestination.Clear();
-        }
-        ControlledPawn->NavigatorComponent->ReachedDestination.AddDynamic(this, &AUSPlayerController::MovementComplete);
         ControlledPawn->NavigatorComponent->Navigate(Request);
     }
 }
 
 void AUSPlayerController::MovementComplete()
 {
-    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-    ControlledPawn->NavigatorComponent->ReachedDestination.RemoveDynamic(this, &AUSPlayerController::MovementComplete);
-
-    UInteractiveComponent* InteractiveComponent =
-        IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());
-
-    if (InteractiveComponent->Complete.IsBound())
+    if (IsValid(CurrentInteractiveEntity.GetObject()))
     {
-        InteractiveComponent->Complete.Clear();
+        TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(CurrentInteractiveEntity.GetObject(), true);
+        IInteractive::Execute_Interact(CurrentInteractiveEntity.GetObject(), Options[0]);
     }
-    InteractiveComponent->Complete.AddDynamic(this, &AUSPlayerController::InteractionComplete);
-
-    // TODO: Update this!
-    bIsInteracting = true;
-    TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(TargetEntity.GetObject(), true);
-    IInteractive::Execute_Interact(TargetEntity.GetObject(), Options[0]);
-}
-
-void AUSPlayerController::InteractionComplete()
-{
-    bIsInteracting = false;
-    AUSCharacter* ControlledPawn = Cast<AUSCharacter>(GetPawn());
-
-    if (!IsValid(TargetEntity.GetObject()))
-    {
-        return;
-    }
-
-    UInteractiveComponent* InteractiveComponent =
-        IInteractive::Execute_GetInteractiveComponent(TargetEntity.GetObject());
-    if (InteractiveComponent->Complete.IsBound())
-    {
-        InteractiveComponent->Complete.RemoveDynamic(this, &AUSPlayerController::InteractionComplete);
-    }
-    IInteractive::Execute_Interrupt(TargetEntity.GetObject());
 }
 
 void AUSPlayerController::UpdateFloorVisibility()
@@ -356,7 +312,7 @@ void AUSPlayerController::UpdateFloorVisibility()
     }
 }
 
-void AUSPlayerController::EntityContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities)
+void AUSPlayerController::ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities)
 {
     // Create a new context menu widget
     FName Name = FName(TEXT("ContextMenuWidget"));
@@ -367,22 +323,8 @@ void AUSPlayerController::EntityContextMenuRequested(const TArray<TScriptInterfa
         TArray<FInteractOption> Options = IInteractive::Execute_GetOptions(Entity.GetObject(), true);
         for (FInteractOption& Option : Options)
         {
-            ContextMenu->AddEntityOption(Entity.GetObject(), Option);
+            ContextMenu->AddOption(Entity.GetObject(), Option);
         }
-    }
-
-    ContextMenu->AddToViewport();
-}
-
-void AUSPlayerController::ItemContextMenuRequested(UInventorySlot* InventorySlot)
-{
-    // Create a new context menu widget
-    FName Name = FName(TEXT("ContextMenuWidget"));
-    UContextMenu* ContextMenu = CreateWidget<UContextMenu>(this, ContextMenuClass, Name);
-
-    for (EItemOptions Option : InventorySlot->GetOptions())
-    {
-        ContextMenu->AddInventorySlotOption(InventorySlot, Option);
     }
 
     ContextMenu->AddToViewport();

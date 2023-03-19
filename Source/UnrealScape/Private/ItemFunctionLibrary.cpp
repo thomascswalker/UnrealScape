@@ -21,17 +21,9 @@ UInventoryComponent* UItemFunctionLibrary::GetInventoryComponent(const UObject* 
     return Controller->InventoryComponent;
 }
 
-UDataTable* UItemFunctionLibrary::GetItemDataTable()
+UDataTable* UItemFunctionLibrary::GetItemDataTable(const UObject* Context)
 {
-    UDataTable* Table;
-    const wchar_t* Path = TEXT("/Game/Blueprints/Items/DT_Items");
-    FSoftObjectPath TablePath = FSoftObjectPath(Path);
-    Table = Cast<UDataTable>(TablePath.ResolveObject());
-    if (Table)
-    {
-        return Table;
-    }
-    Table = Cast<UDataTable>(TablePath.TryLoad());
+    UDataTable* Table = LoadObject<UDataTable>(Context->GetWorld(), TEXT("/Game/Blueprints/Items/DT_ItemDefinitions"));
     if (Table)
     {
         return Table;
@@ -40,16 +32,16 @@ UDataTable* UItemFunctionLibrary::GetItemDataTable()
     return nullptr;
 }
 
-FItem* UItemFunctionLibrary::GetItemPtrFromId(int Id)
+FItemDef* UItemFunctionLibrary::GetItemPtrFromId(const UObject* Context, int Id)
 {
-    UDataTable* ItemTable = GetItemDataTable();
+    UDataTable* ItemTable = GetItemDataTable(Context);
     if (!ItemTable)
     {
         return nullptr;
     }
     for (FName RowName : ItemTable->GetRowNames())
     {
-        FItem* Row = ItemTable->FindRow<FItem>(RowName, FString(""));
+        FItemDef* Row = ItemTable->FindRow<FItemDef>(RowName, FString(""));
         if (!Row)
         {
             continue;
@@ -62,13 +54,18 @@ FItem* UItemFunctionLibrary::GetItemPtrFromId(int Id)
     return nullptr;
 }
 
-FDataTableRowHandle UItemFunctionLibrary::GetItemRowHandleFromId(int Id)
+FDataTableRowHandle UItemFunctionLibrary::GetItemRowHandleFromId(const UObject* Context, int Id)
 {
     FDataTableRowHandle Handle;
-    Handle.DataTable = GetItemDataTable();
+    UDataTable* ItemTable = GetItemDataTable(Context);
+    if (!ItemTable)
+    {
+        return Handle;
+    }
+    Handle.DataTable = ItemTable;
     for (FName RowName : Handle.DataTable->GetRowNames())
     {
-        FItem* Row = Handle.DataTable->FindRow<FItem>(RowName, FString(""));
+        FItemDef* Row = Handle.DataTable->FindRow<FItemDef>(RowName, FString(""));
         if (!Row)
         {
             continue;
@@ -83,7 +80,7 @@ FDataTableRowHandle UItemFunctionLibrary::GetItemRowHandleFromId(int Id)
     return Handle;
 }
 
-bool UItemFunctionLibrary::PlayerCanReceiveItemFromRef(const UObject* Context, const FItem& Item)
+bool UItemFunctionLibrary::PlayerCanReceiveItemFromDef(const UObject* Context, const FItemDef& ItemDef)
 {
     UInventoryComponent* Component = GetInventoryComponent(Context);
     if (!Component)
@@ -91,27 +88,27 @@ bool UItemFunctionLibrary::PlayerCanReceiveItemFromRef(const UObject* Context, c
         return false;
     }
 
-    return Component->GetOpenSlot(Item) != nullptr;
+    return Component->GetOpenSlot(ItemDef) != nullptr;
 }
 
 bool UItemFunctionLibrary::PlayerCanReceiveItemFromId(const UObject* Context, int Id)
 {
-    FItem* ItemPtr = GetItemPtrFromId(Id);
+    FItemDef* ItemPtr = GetItemPtrFromId(Context, Id);
     if (!ItemPtr)
     {
         return false;
     }
-    return PlayerCanReceiveItemFromRef(Context, *ItemPtr);
+    return PlayerCanReceiveItemFromDef(Context, *ItemPtr);
 }
 
-bool UItemFunctionLibrary::PlayerHasItemByRef(const UObject* Context, const FItem& Item)
+bool UItemFunctionLibrary::PlayerHasItemByDef(const UObject* Context, const FItemDef& ItemDef)
 {
     UInventoryComponent* Component = GetInventoryComponent(Context);
     if (!Component)
     {
         return false;
     }
-    return Component->HasItem(Item);
+    return Component->HasItem(ItemDef);
 }
 
 bool UItemFunctionLibrary::PlayerHasItemById(const UObject* Context, int Id)
@@ -124,34 +121,34 @@ bool UItemFunctionLibrary::PlayerHasItemById(const UObject* Context, int Id)
     return Component->HasItemId(Id);
 }
 
-bool UItemFunctionLibrary::GivePlayerItemFromRef(const UObject* Context, const FItem& Item, int Count)
+bool UItemFunctionLibrary::GivePlayerItemFromDef(const UObject* Context, const FItemDef& ItemDef, int Count)
 {
     UInventoryComponent* Component = GetInventoryComponent(Context);
     if (!Component)
     {
         return false;
     }
-    return Component->AddItem(Item, Count);
+    return Component->AddItem(ItemDef, Count);
 }
 
 bool UItemFunctionLibrary::GivePlayerItemFromId(const UObject* Context, int Id, int Count)
 {
-    FItem* ItemPtr = GetItemPtrFromId(Id);
+    FItemDef* ItemPtr = GetItemPtrFromId(Context, Id);
     if (!ItemPtr)
     {
         return false;
     }
-    return GivePlayerItemFromRef(Context, *ItemPtr, Count);
+    return GivePlayerItemFromDef(Context, *ItemPtr, Count);
 }
 
 void UItemFunctionLibrary::SpawnItemAtLocationById(const UObject* Context, int Id, FVector Location, int Count)
 {
-    FItem* ItemPtr = GetItemPtrFromId(Id);
+    FItemDef* ItemPtr = GetItemPtrFromId(Context, Id);
     if (!ItemPtr)
     {
         return;
     }
-    FItem Item = *ItemPtr;
+    FItemDef Item = *ItemPtr;
     FTransform Transform = FTransform(FRotator::ZeroRotator, Location, FVector::One());
     AItemEntity* SpawnedItem =
         Context->GetWorld()->SpawnActorDeferred<AItemEntity>(AItemEntity::StaticClass(), Transform);
@@ -162,7 +159,7 @@ void UItemFunctionLibrary::SpawnItemAtLocationById(const UObject* Context, int I
         return;
     }
 
-    SpawnedItem->ItemRow = GetItemRowHandleFromId(Item.Id);
+    SpawnedItem->ItemName = Item.Name;
     SpawnedItem->Count = Count;
 
     SpawnedItem->FinishSpawning(Transform);

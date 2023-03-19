@@ -18,24 +18,15 @@ public:
     // Sets default values for this component's properties
     UInventoryComponent(const FObjectInitializer& ObjectInitializer);
 
-protected:
-    // Called when the game starts
-    virtual void BeginPlay() override;
-
-public:
-    // Called every frame
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-                               FActorComponentTickFunction* ThisTickFunction) override;
-
     // Properties
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     TArray<UInventorySlot*> Slots;
 
-    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemAdded, const FItem&, Item, int, Count);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemAdded, const FItemDef&, Item, int, Count);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
     FItemAdded ItemAdded;
 
-    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemRemoved, const FItem&, Item, int, Count);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemRemoved, const FItemDef&, Item, int, Count);
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event Dispatchers")
     FItemRemoved ItemRemoved;
 
@@ -43,7 +34,7 @@ public:
     UFUNCTION(BlueprintCallable)
     void ConstructSlots();
 
-    UInventorySlot* GetOpenSlot(const FItem& Item);
+    UInventorySlot* GetOpenSlot(const FItemDef& Item);
 
     UFUNCTION(BlueprintCallable)
     UInventorySlot* GetSlot(int X, int Y);
@@ -57,18 +48,18 @@ public:
     UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue"))
     bool IsFull();
 
-    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue", DisplayName = "Has Item (FItem)"))
-    bool HasItem(const FItem& Item);
+    UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue", DisplayName = "Has Item (FItemDef)"))
+    bool HasItem(const FItemDef& Item);
 
     UFUNCTION(BlueprintCallable, meta = (ExpandBoolAsExecs = "ReturnValue", DisplayName = "Has Item (Id)"))
     bool HasItemId(int Id);
 
     UFUNCTION(BlueprintCallable)
-    bool AddItem(const FItem& Item, int Count);
+    bool AddItem(const FItemDef& Item, int Count);
 
     UFUNCTION(BlueprintCallable)
-    bool AddUniqueItem(const FItem& Item, int Count);
+    bool AddUniqueItem(const FItemDef& Item, int Count);
 
     UFUNCTION(BlueprintCallable)
-    void RemoveItem(const FItem& Item, int Count);
+    void RemoveItem(const FItemDef& Item, int Count);
 };

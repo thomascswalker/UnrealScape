@@ -53,16 +53,10 @@ public:
 
     // Interaction
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    TObjectPtr<AActor> TargetActor;
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    TScriptInterface<IInteractive> TargetEntity;
+    TScriptInterface<IInteractive> CurrentInteractiveEntity;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     bool bIsInteracting = false;
-
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Interaction")
-    FInteractRequest CurrentInteractionRequest;
 
     // Overrides
     virtual void BeginPlay() override;
@@ -83,6 +77,12 @@ public:
     void OnRightClick();
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
+    void InterruptInteraction();
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
+    void SetCurrentInteractiveEntity(AActor* Actor);
+
+    UFUNCTION(BlueprintCallable, Category = "Actions")
     void Move(const FVector Location);
 
     UFUNCTION(BlueprintCallable, Category = "Actions")
@@ -91,15 +91,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Actions")
     void MovementComplete();
 
-    UFUNCTION(BlueprintCallable, Category = "Interaction")
-    void InteractionComplete();
-
     UFUNCTION(BlueprintCallable, Category = "Visual")
     void UpdateFloorVisibility();
 
     UFUNCTION(BlueprintCallable, Category = "GUI")
-    void EntityContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
-
-    UFUNCTION(BlueprintCallable, Category = "GUI")
-    void ItemContextMenuRequested(UInventorySlot* InventorySlot);
+    void ContextMenuRequested(const TArray<TScriptInterface<IInteractive>>& Entities);
 };

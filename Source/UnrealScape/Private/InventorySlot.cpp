@@ -3,7 +3,7 @@
 #include "InventorySlot.h"
 #include "ItemFunctionLibrary.h"
 
-void UInventorySlot::SetItem(const FItem& NewItem)
+void UInventorySlot::SetItem(const FItemDef& NewItem)
 {
     Item = NewItem;
     bHasItem = true;
@@ -28,48 +28,62 @@ void UInventorySlot::AddCount(int NewCount)
     SlotChanged.Broadcast();
 }
 
-TArray<EItemOptions> UInventorySlot::GetOptions()
+FString UInventorySlot::GetName_Implementation()
+{
+    if (bHasItem)
+    {
+        return Item.Name;
+    }
+    else
+    {
+        return "";
+    }
+}
+
+TArray<FInteractOption> UInventorySlot::GetOptions_Implementation(bool bVisibleOnly)
 {
     if (!bHasItem)
     {
-        return TArray<EItemOptions>();
+        return TArray<FInteractOption>();
     }
 
-    TArray<EItemOptions> Options = Item.Options;
+    TArray<FInteractOption> Options;
     if (Item.bEquipable)
     {
         switch (Item.EquipType)
         {
             case EItemEquipType::Weapon:
-                Options.Add(EItemOptions::Wield);
+                Options.Add(FInteractOption::Wield());
                 break;
             case EItemEquipType::Armor:
-                Options.Add(EItemOptions::Equip);
+                Options.Add(FInteractOption::Equip());
                 break;
             default:
                 break;
         }
     }
 
-    Options.Add(EItemOptions::Use);
-    Options.Add(EItemOptions::Drop);
-    Options.Add(EItemOptions::Examine);
+    Options.Add(FInteractOption::Use());
+    Options.Add(FInteractOption::Drop());
+    Options.Add(FInteractOption::Examine());
 
     return Options;
 }
 
-void UInventorySlot::OptionPressed_Implementation(const EItemOptions Option)
+void UInventorySlot::OptionPressed_Implementation(const FInteractOption& Option)
 {
-    INFO(L"Dropping item.");
-    switch (Option)
+    if (Option.Name == "Drop")
     {
-        case EItemOptions::Drop:
-        {
-            SlotDropped.Broadcast(Item, Count);
-            FVector PlayerLocation = UGlobalFunctionLibrary::GetPlayerLocation(this);
-            UItemFunctionLibrary::SpawnItemAtLocationById(this, Item.Id, PlayerLocation, Count);
-            break;
-        }
-        default: break;
+        SlotDropped.Broadcast(Item, Count);
+        FVector PlayerLocation = UGlobalFunctionLibrary::GetPlayerLocation(this);
+        UItemFunctionLibrary::SpawnItemAtLocationById(this, Item.Id, PlayerLocation, Count);
+    }
+    else if (Option.Name == "Examine")
+    {
+        UGlobalFunctionLibrary::AddChatboxMessage(this, FText::FromString(Item.Examine));
+    }
+    else
+    {
+        WARNING(L"No implementation for this option.");
     }
 }

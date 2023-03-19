@@ -37,8 +37,10 @@ public:
     UPROPERTY(BlueprintReadOnly, EditAnywhere)
     TObjectPtr<UInteractiveComponent> InteractiveComponent;
 
-    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ShowOnlyInnerProperties))
-    FDataTableRowHandle ItemRow;
+    UDataTable* ItemDataTable;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Item Definition", GetOptions = "GetItemDisplayNames"))
+    FString ItemName;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     int Count = 1;
@@ -76,5 +78,9 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     UMeshComponent* GetMeshComponent();
 
-    FItem* GetItem();
+    FItemDef* GetItem();
+    FName GetItemRowName();
+
+    UFUNCTION(CallInEditor)
+    TArray<FString> GetItemDisplayNames();
 };
