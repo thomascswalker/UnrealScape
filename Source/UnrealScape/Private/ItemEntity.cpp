@@ -15,7 +15,7 @@ AItemEntity::AItemEntity()
 
     InteractiveComponent->SetupAttachment(RootComponent);
 
-    ItemDataTable = UItemFunctionLibrary::GetItemDataTable();
+    ItemDataTable = UItemFunctionLibrary::GetItemDataTable(this);
 }
 
 // Called when the game starts or when spawned
