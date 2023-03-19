@@ -21,17 +21,9 @@ UInventoryComponent* UItemFunctionLibrary::GetInventoryComponent(const UObject* 
     return Controller->InventoryComponent;
 }
 
-UDataTable* UItemFunctionLibrary::GetItemDataTable()
+UDataTable* UItemFunctionLibrary::GetItemDataTable(const UObject* Context)
 {
-    UDataTable* Table;
-    const wchar_t* Path = TEXT("/Game/Blueprints/Items/DT_ItemDefinitions");
-    FSoftObjectPath TablePath = FSoftObjectPath(Path);
-    Table = Cast<UDataTable>(TablePath.ResolveObject());
-    if (Table)
-    {
-        return Table;
-    }
-    Table = Cast<UDataTable>(TablePath.TryLoad());
+    UDataTable* Table = LoadObject<UDataTable>(Context->GetWorld(), TEXT("/Game/Blueprints/Items/DT_ItemDefinitions"));
     if (Table)
     {
         return Table;
@@ -40,9 +32,9 @@ UDataTable* UItemFunctionLibrary::GetItemDataTable()
     return nullptr;
 }
 
-FItemDef* UItemFunctionLibrary::GetItemPtrFromId(int Id)
+FItemDef* UItemFunctionLibrary::GetItemPtrFromId(const UObject* Context, int Id)
 {
-    UDataTable* ItemTable = GetItemDataTable();
+    UDataTable* ItemTable = GetItemDataTable(Context);
     if (!ItemTable)
     {
         return nullptr;
@@ -62,10 +54,15 @@ FItemDef* UItemFunctionLibrary::GetItemPtrFromId(int Id)
     return nullptr;
 }
 
-FDataTableRowHandle UItemFunctionLibrary::GetItemRowHandleFromId(int Id)
+FDataTableRowHandle UItemFunctionLibrary::GetItemRowHandleFromId(const UObject* Context, int Id)
 {
     FDataTableRowHandle Handle;
-    Handle.DataTable = GetItemDataTable();
+    UDataTable* ItemTable = GetItemDataTable(Context);
+    if (!ItemTable)
+    {
+        return Handle;
+    }
+    Handle.DataTable = ItemTable;
     for (FName RowName : Handle.DataTable->GetRowNames())
     {
         FItemDef* Row = Handle.DataTable->FindRow<FItemDef>(RowName, FString(""));
@@ -96,7 +93,7 @@ bool UItemFunctionLibrary::PlayerCanReceiveItemFromDef(const UObject* Context, c
 
 bool UItemFunctionLibrary::PlayerCanReceiveItemFromId(const UObject* Context, int Id)
 {
-    FItemDef* ItemPtr = GetItemPtrFromId(Id);
+    FItemDef* ItemPtr = GetItemPtrFromId(Context, Id);
     if (!ItemPtr)
     {
         return false;
@@ -136,7 +133,7 @@ bool UItemFunctionLibrary::GivePlayerItemFromDef(const UObject* Context, const F
 
 bool UItemFunctionLibrary::GivePlayerItemFromId(const UObject* Context, int Id, int Count)
 {
-    FItemDef* ItemPtr = GetItemPtrFromId(Id);
+    FItemDef* ItemPtr = GetItemPtrFromId(Context, Id);
     if (!ItemPtr)
     {
         return false;
@@ -146,7 +143,7 @@ bool UItemFunctionLibrary::GivePlayerItemFromId(const UObject* Context, int Id, 
 
 void UItemFunctionLibrary::SpawnItemAtLocationById(const UObject* Context, int Id, FVector Location, int Count)
 {
-    FItemDef* ItemPtr = GetItemPtrFromId(Id);
+    FItemDef* ItemPtr = GetItemPtrFromId(Context, Id);
     if (!ItemPtr)
     {
         return;

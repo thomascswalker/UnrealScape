@@ -1,1 +1,22 @@
-{"ImportGroups": [{"bReplaceExisting": "true", "bSkipReadOnly": "true", "DestinationPath": "/Game/Blueprints/Items", "GroupName": "Test", "FileNames": ["C:\\Users\\Tom\\Documents\\GitHub\\UnrealScape\\Scripts\\DT_ItemDefinitions.csv"], "FactoryName": "CSVImportFactory", "ImportSettings": {"ImportAs": "DataTable", "ImportRowStruct": "ItemDef", "ImportType": "ECSV_DataTable"}}]}
+{
+    "ImportGroups": [
+        {
+            "bReplaceExisting": "true",
+            "bSkipReadOnly": "true",
+            "DestinationPath": "/Game/Blueprints/Items",
+            "FactoryName": "CSVImportFactory",
+            "FileNames": [
+                "C:\\Users\\Tom\\Documents\\GitHub\\UnrealScape\\Scripts\\DT_ItemDefinitions.csv",
+                "C:\\Users\\Tom\\Documents\\GitHub\\UnrealScape\\Scripts\\DT_ItemDefinitions.csv",
+                "C:\\Users\\Tom\\Documents\\GitHub\\UnrealScape\\Scripts\\DT_ItemDefinitions.csv",
+                "C:\\Users\\Tom\\Documents\\GitHub\\UnrealScape\\Scripts\\DT_ItemDefinitions.csv"
+            ],
+            "GroupName": "Test",
+            "ImportSettings": {
+                "ImportAs": "DataTable",
+                "ImportRowStruct": "ItemDef",
+                "ImportType": "ECSV_DataTable"
+            }
+        }
+    ]
+}
