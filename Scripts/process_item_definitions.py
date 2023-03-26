@@ -1,118 +1,134 @@
 import csv
 import base64
 import json
+import logging
 import os
 import subprocess
+from typing import List
 
-from osrsbox import items_api
-
-WRITE_ICONS = True
-WRITE_CSV = True
-
-UE5_ENGINE_ROOT = "C:\\Program Files\\Epic Games\\UE_5.1\\Engine"
-PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
-EDITOR_CMD = os.path.join(UE5_ENGINE_ROOT, "Binaries\\Win64\\UnrealEditor.exe")
-UPROJECT_FILE = os.path.join(PROJECT_ROOT, "UnrealScape.uproject")
-
-allowed_item_list = [
-    "ashes",
-    "bread",
-    "bread dough",
-    "bronze axe",
-    "bucket",
-    "bucket of water",
-    "logs",
-    "pot",
-    "pot of flour",
-    "raw shrimps",
-    "shrimps",
-    "small fishing net",
-    "tinderbox",
-    "bronze pickaxe",
-    "copper ore",
-    "tin ore",
-]
-
-processed = []
-
-tex_import_json = os.path.join(PROJECT_ROOT, "Scripts\\TextureImportSettings.json")
-csv_import_json = os.path.join(PROJECT_ROOT, "Scripts\\CSVImportSettings.json")
-out_item_definition_csv = os.path.join(
-    os.path.dirname(__file__), "DT_ItemDefinitions.csv"
+from const import (
+    ProjectPaths,
+    EditorPaths,
+    ImportSettings,
+    ITEM_ROWS,
+    get_item_list,
+    format_name,
 )
+from osrsbox import items_api
+from osrsbox.items_api.all_items import AllItems, ItemProperties
 
-item_rows = [
-    "---",
-    "Name",
-    "Mesh",
-    "Id",
-    "bEquipable",
-    "EquipType",
-    "bStackable",
-    "Examine",
-    "Icon",
-    "Options",
-]
+from logger import get_logger
 
-if __name__ == "__main__":
-    # Load all items
-    all_db_items = items_api.load()
 
-    with open(out_item_definition_csv, mode="w", newline="") as items_out_fi:
-        # Create csv writer
-        items_writer = csv.writer(
-            items_out_fi,
-            delimiter=",",
-            quotechar='"',
-            quoting=csv.QUOTE_ALL,
-        )
+class ItemDefProcessor:
+    logger = get_logger(__name__, logging.INFO)
 
-        # Write headers
-        items_writer.writerow(item_rows)
+    allow_list: List[str]
+    processed: List[str]
+    all_items: AllItems = items_api.load()
+    num_errors: int = 0
 
-        for item in all_db_items:
-            # Pass on noted or quest items
-            if item.noted or item.quest_item:
-                continue
+    texture_settings: dict = {
+        "ImportGroups": [
+            {
+                "bReplaceExisting": "true",
+                "bSkipReadOnly": "true",
+                "DestinationPath": "/Game/Textures/Items",
+                "FactoryName": "TextureFactory",
+                "FileNames": [],
+                "GroupName": "Test",
+            }
+        ]
+    }
 
-            # Only allow items defined in allowed_item_list
-            if item.name.lower() not in allowed_item_list:
-                print(f"Skipping: {item.name} ({item.id})")
-                continue
+    item_def_settings: dict = {
+        "ImportGroups": [
+            {
+                "bReplaceExisting": "true",
+                "bSkipReadOnly": "true",
+                "DestinationPath": "/Game/Blueprints/Items",
+                "FactoryName": "CSVImportFactory",
+                "FileNames": [],
+                "GroupName": "Test",
+                "ImportSettings": {
+                    "ImportAs": "DataTable",
+                    "ImportRowStruct": "ItemDef",
+                    "ImportType": "ECSV_DataTable",
+                },
+            }
+        ]
+    }
 
-            # If an item is a duplicate, skip it
-            if item.name in processed:
-                print(f"Already processed: {item.name} ({item.id})")
-                continue
+    def __init__(self, allow_list: List[str] = []) -> None:
+        self.processed = []
+        self.allow_list = allow_list
 
-            print(f"Processing: {item.name} ({item.id})")
+    def is_allowed(self, item: ItemProperties) -> bool:
+        basename = format_name(item.name)
+        is_processed = basename in self.processed
+        is_allowed = basename in [format_name(n) for n in self.allow_list]
+        return not is_processed and is_allowed
 
-            # Write out the texture icon
-            basename = "".join(
-                [c for c in item.name if c.isalpha() or c.isdigit() or c == " "]
-            ).rstrip()
-            format_name = basename.title().replace(" ", "")
-            filename = f"{PROJECT_ROOT}\\Assets\\Textures\\Items\\T_{format_name}.png"
-            with open(filename, "wb") as f:
-                f.write(base64.urlsafe_b64decode(bytes(item.icon, "utf-8")))
+    def write_texture(self, item: ItemProperties, basename: str) -> str:
+        # Build the texture subpath
+        tex_subpath = f"Textures\\Items\\T_{basename}.png"
 
-            # Write the filename to the texture import .json file
-            tex_json_data = {}
-            with open(tex_import_json) as f:
-                tex_json_data = json.load(f)
-                tex_json_data["ImportGroups"][0]["FileNames"].append(filename)
-            with open(tex_import_json, "w") as f:
-                json.dump(tex_json_data, f)
+        # Build the texture output path
+        tex_outpath = os.path.join(ProjectPaths.AssetsDir, tex_subpath)
 
-            # Create the struct values
-            mesh = f"{PROJECT_ROOT}\\Content\\Meshes\\Items\\SM_{format_name}.uasset"
-            mesh_exists = os.path.exists(mesh.lower())
-            mesh_uasset = f"/Game/Meshes/Items/SM_{format_name}.SM_{format_name}"
-            box_uasset = "/Engine/BasicShapes/Cube.Cube"
+        self.logger.info(f"Writing texture: {tex_outpath}.")
 
-            # Write the current item to the .csv
-            items_writer.writerow(
-                [
+        # Write the texture from bytes to a PNG file (no PNG header)
+        with open(tex_outpath, "wb") as f:
+            f.write(base64.urlsafe_b64decode(bytes(item.icon, "utf-8")))
+
+        self.logger.success(f"Texture written for {basename}: {tex_outpath}")
+
+        return tex_outpath
+
+    def write_csv(self) -> None:
+        with open(ImportSettings.ItemCsvFile, mode="w", newline="") as out_csv_file:
+            # Create csv writer
+            writer = csv.writer(
+                out_csv_file,
+                delimiter=",",
+                quotechar='"',
+                quoting=csv.QUOTE_ALL,
+            )
+
+            # Write headers
+            writer.writerow(ITEM_ROWS)
+
+            for item in self.all_items:
+                self.logger.debug(f"Processing: {item.name}")
+                basename = format_name(item.name)
+
+                # Determine if we've processed this item or if it's not allowed
+                # If it doesn't pass the check, we'll skip it
+                if not self.is_allowed(item):
+                    self.logger.debug(f"Already processed or not allowed: {item.name}")
+                    continue
+
+                # Write the texture to a file
+                tex_file = self.write_texture(item, basename)
+
+                # Append the new texture filename to the list of textures to import
+                group = self.texture_settings["ImportGroups"][0]
+                group["FileNames"].append(tex_file)
+
+                # Create the mesh paths
+                out_model_subpath = f"Meshes\\Items\\SM_{basename}.uasset"
+                mesh = os.path.join(ProjectPaths.ContentDir, out_model_subpath)
+                mesh_exists = os.path.exists(mesh)
+                mesh_uasset = f"/Game/Meshes/Items/SM_{basename}.SM_{basename}"
+                box_uasset = "/Engine/BasicShapes/Cube.Cube"
+
+                if not mesh_exists:
+                    msg = f"Mesh not found for {basename}, defaulting to Cube."
+                    self.logger.warning(msg)
+
+                # Write the current item to the .csv
+                row = [
                     item.id,  # Row
                     item.name,  # Name
                     mesh_uasset if mesh_exists else box_uasset,  # Mesh
@@ -121,36 +137,78 @@ if __name__ == "__main__":
                     "",  # EquipType
                     "True" if item.stackable else "False",  # Stackable
                     item.examine,  # Examine
-                    f"/Game/Textures/Items/T_{format_name}.T_{format_name}",  # Icon
+                    f"/Game/Textures/Items/T_{basename}.T_{basename}",  # Icon
                     "",  # Options
                 ]
-            )
+                writer.writerow(row)
+                self.logger.success(f"Row written for {item.name}")
+                self.logger.info(json.dumps(row, indent=4))
 
-            # Add to the processed list to prevent duplicates
-            processed.append(item.name)
+                # Mark that we've processed this item to prevent duplicates
+                self.logger.success(f"Finished processing: {basename}")
+                self.processed.append(basename)
 
-    # Import all generated .png files
-    args = [
-        EDITOR_CMD,
-        UPROJECT_FILE,
-        "-run=ImportAssetsCommandlet",
-        f"-importsettings={tex_import_json}",
-    ]
-    subprocess.run(args)
+        # Add the final generated .csv file to the import settings for Item defs
+        group = self.item_def_settings["ImportGroups"][0]
+        group["FileNames"].append(ImportSettings.ItemCsvFile)
 
-    # Write the generated .csv filename to the csv import .json file
-    csv_json_data = {}
-    with open(csv_import_json) as f:
-        csv_json_data = json.load(f)
-        csv_json_data["ImportGroups"][0]["FileNames"].append(out_item_definition_csv)
-    with open(csv_import_json, "w") as f:
-        json.dump(csv_json_data, f)
+    def write_json(self) -> None:
+        self.logger.info(f"Writing {ImportSettings.TextureJsonFile}.")
+        with open(ImportSettings.TextureJsonFile, "w") as f:
+            json.dump(self.texture_settings, f)
 
-    # Import .csv to create DT_ItemDefinitions DataTable
-    args = [
-        EDITOR_CMD,
-        UPROJECT_FILE,
-        "-run=ImportAssetsCommandlet",
-        f"-importsettings={csv_import_json}",
-    ]
-    subprocess.run(args)
+        self.logger.info(f"Writing {ImportSettings.ItemJsonFile}.")
+        with open(ImportSettings.ItemJsonFile, "w") as f:
+            json.dump(self.item_def_settings, f)
+
+    def import_textures(self) -> None:
+        self.logger.info("Importing textures.")
+        # Import all generated .png files
+        args = [
+            EditorPaths.UeEngineExe,
+            ProjectPaths.ProjectFile,
+            "-run=ImportAssetsCommandlet",
+            f"-importsettings={ImportSettings.TextureJsonFile}",
+        ]
+
+        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        try:
+            p.check_returncode()
+            self.logger.success("Successfully imported item definitions.")
+        except subprocess.CalledProcessError:
+            self.num_errors += 1
+            self.logger.error("An error occurred importing item definitions.")
+            self.logger.error(p.stderr)
+
+    def import_item_definitions(self) -> None:
+        self.logger.info("Importing item definitions.")
+        # Import .csv to create DT_ItemDefinitions DataTable
+        args = [
+            EditorPaths.UeEngineExe,
+            ProjectPaths.ProjectFile,
+            "-run=ImportAssetsCommandlet",
+            f"-importsettings={ImportSettings.ItemJsonFile}",
+        ]
+        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        try:
+            p.check_returncode()
+            self.logger.success("Successfully imported item definitions.")
+        except subprocess.CalledProcessError:
+            self.num_errors += 1
+            self.logger.error("An error occurred importing item definitions.")
+            self.logger.error(p.stderr)
+
+    def process(self) -> None:
+        self.logger.info("Starting processing")
+        self.write_csv()
+        self.write_json()
+        self.import_textures()
+        self.import_item_definitions()
+
+        self.logger.success(f"Finished processing items ({self.num_errors} errors)")
+
+
+if __name__ == "__main__":
+    items = get_item_list()
+    item_processor = ItemDefProcessor(items)
+    item_processor.process()
