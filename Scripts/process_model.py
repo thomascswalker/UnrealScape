@@ -24,13 +24,13 @@ except ImportError:
 from logger import get_logger
 from const import (
     ProjectPaths,
-    get_item_list,
-    get_source_model_data,
-    format_name,
+    getItemList,
+    getSourceModelData,
+    formatOutputName,
     ModelData,
 )
 
-SOURCE_MODEL_DATA: ModelData = get_source_model_data()
+SOURCE_MODEL_DATA: ModelData = getSourceModelData()
 
 
 def gamma_correct(color: rt.Color, gamma: float = 1.0) -> rt.Color:
@@ -92,12 +92,16 @@ class ModelProcessor:
 
                 self.ui.tv_source_models.insertRow(row)
                 self.ui.tv_source_models.setItem(row, ModelData.Id, item_id)
-                self.ui.tv_source_models.setItem(row, ModelData.Name, item_name)
-                self.ui.tv_source_models.setItem(row, ModelData.Type, item_type)
-                self.ui.tv_source_models.setItem(row, ModelData.ModelIds, item_ids)
+                self.ui.tv_source_models.setItem(
+                    row, ModelData.Name, item_name)
+                self.ui.tv_source_models.setItem(
+                    row, ModelData.Type, item_type)
+                self.ui.tv_source_models.setItem(
+                    row, ModelData.ModelIds, item_ids)
 
             # Populate game model list
-            game_models: List[str] = glob(f"{ProjectPaths.StaticMeshesDir}\\**.fbx")
+            game_models: List[str] = glob(
+                f"{ProjectPaths.StaticMeshesDir}\\**.fbx")
             for file in game_models:
                 model_name = os.path.basename(file).split(".")[0]
                 item = QTableWidgetItem(model_name)
@@ -109,36 +113,44 @@ class ModelProcessor:
             self.ui.btn_import_source_model.clicked.connect(
                 self.on_source_import_pressed
             )
-            self.ui.btn_import_game_model.clicked.connect(self.on_game_import_pressed)
+            self.ui.btn_import_game_model.clicked.connect(
+                self.on_game_import_pressed)
             self.ui.btn_bake_vertex_color.clicked.connect(self.on_bake_pressed)
-            self.ui.btn_assign_multi_material.clicked.connect(self.on_assign_mtl_pressed)
+            self.ui.btn_assign_multi_material.clicked.connect(
+                self.on_assign_mtl_pressed)
 
             self.ui.btn_flat.clicked.connect(lambda: self.on_mtl_id_pressed(1))
-            self.ui.btn_metal.clicked.connect(lambda: self.on_mtl_id_pressed(2))
+            self.ui.btn_metal.clicked.connect(
+                lambda: self.on_mtl_id_pressed(2))
             self.ui.btn_sss.clicked.connect(lambda: self.on_mtl_id_pressed(3))
-            self.ui.btn_translucent.clicked.connect(lambda: self.on_mtl_id_pressed(4))
+            self.ui.btn_translucent.clicked.connect(
+                lambda: self.on_mtl_id_pressed(4))
 
         def on_source_import_pressed(self) -> None:
             selected_rows = self.ui.tv_source_models.selectionModel().selectedRows()
             if len(selected_rows) == 0:
-                QMessageBox.warning(self, "Selection error", "Please select a row.")
+                QMessageBox.warning(self, "Selection error",
+                                    "Please select a row.")
                 return
             row = selected_rows[0].row()
             name_item = self.ui.tv_source_models.item(row, ModelData.Name)
             ModelProcessor.current_name = name_item.text()
-            model_ids_item = self.ui.tv_source_models.item(row, ModelData.ModelIds)
+            model_ids_item = self.ui.tv_source_models.item(
+                row, ModelData.ModelIds)
             model_ids = model_ids_item.text().replace(" ", "").split(",")
             ModelProcessor.import_models(model_ids)
 
         def on_game_import_pressed(self) -> None:
             selected_rows = self.ui.tv_game_models.selectionModel().selectedRows()
             if len(selected_rows) == 0:
-                QMessageBox.warning(self, "Selection error", "Please select a row.")
+                QMessageBox.warning(self, "Selection error",
+                                    "Please select a row.")
                 return
             row = selected_rows[0].row()
             model_item = self.ui.tv_game_models.item(row, 0)
             model_name = model_item.text()
-            filename = os.path.join(ProjectPaths.StaticMeshesDir, f"{model_name}.fbx")
+            filename = os.path.join(
+                ProjectPaths.StaticMeshesDir, f"{model_name}.fbx")
             rt.ImportFile(filename, rt.Name("NoPrompt"), using=rt.FBXIMP)
 
         def on_export_pressed(self) -> None:
@@ -207,15 +219,16 @@ class ModelProcessor:
         nodes = rt.Objects
         result = attach(nodes)
         if ModelProcessor.current_name != "":
-            fmt_name = format_name(ModelProcessor.current_name)
+            fmt_name = formatOutputName(ModelProcessor.current_name)
             result.name = f"SM_{fmt_name}"
         ModelProcessor.current_node = result
         return result
 
     @staticmethod
     def export_model(name: str) -> None:
-        new_name = format_name(name)
-        filename = os.path.join(ProjectPaths.StaticMeshesDir, f"\\SM_{new_name}.fbx")
+        new_name = formatOutputName(name)
+        filename = os.path.join(
+            ProjectPaths.StaticMeshesDir, f"\\SM_{new_name}.fbx")
         ModelProcessor.logger.debug(f"Exporting model to {filename}")
         rt.ExportFile(filename, rt.Name("NoPrompt"), using=rt.FBXEXP)
 
@@ -249,14 +262,16 @@ class ModelProcessor:
         multi_mtl = node.material
         for face_id in range(node.NumFaces):
             face_color = ModelProcessor.get_mtl_color(multi_mtl, face_id)
-            ModelProcessor.logger.debug(f"Setting face {face_id} to {str(face_color)}")
+            ModelProcessor.logger.debug(
+                f"Setting face {face_id} to {str(face_color)}")
             rt.PolyOp.SetFaceColor(node, 0, face_id + 1, face_color)
         node.material = None
 
     @staticmethod
     def mesh_exists(name: str) -> bool:
-        name = format_name(name)
-        mesh_file = os.path.join(ProjectPaths.AssetsDir, f"StaticMeshes\\SM_{name}.fbx")
+        name = formatOutputName(name)
+        mesh_file = os.path.join(
+            ProjectPaths.AssetsDir, f"StaticMeshes\\SM_{name}.fbx")
         return os.path.exists(mesh_file)
 
     @staticmethod
@@ -266,7 +281,8 @@ class ModelProcessor:
             return
 
         rt.resetMaxFile(rt.Name("NoPrompt"))
-        indexes = ModelProcessor.get_indexes_from_name(name, "item_model_ground")
+        indexes = ModelProcessor.get_indexes_from_name(
+            name, "item_model_ground")
         if len(indexes) == 0:
             ModelProcessor.logger.debug(f"Could not find item: {name}")
             return
@@ -282,7 +298,7 @@ class ModelProcessor:
 
     @staticmethod
     def process_all(overwrite: bool = False) -> None:
-        items = get_item_list()
+        items = getItemList()
         for item in items:
             ModelProcessor.process(item, overwrite)
 

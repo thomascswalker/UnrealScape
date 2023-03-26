@@ -11,7 +11,7 @@ from const import (
     EditorPaths,
     ImportSettings,
     ITEM_ROWS,
-    get_item_list,
+    getItemList,
     format_name,
 )
 from osrsbox import items_api
@@ -106,7 +106,8 @@ class ItemDefProcessor:
                 # Determine if we've processed this item or if it's not allowed
                 # If it doesn't pass the check, we'll skip it
                 if not self.is_allowed(item):
-                    self.logger.debug(f"Already processed or not allowed: {item.name}")
+                    self.logger.debug(
+                        f"Already processed or not allowed: {item.name}")
                     continue
 
                 # Write the texture to a file
@@ -171,7 +172,8 @@ class ItemDefProcessor:
             f"-importsettings={ImportSettings.TextureJsonFile}",
         ]
 
-        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.run(args, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
         try:
             p.check_returncode()
             self.logger.success("Successfully imported item definitions.")
@@ -189,7 +191,8 @@ class ItemDefProcessor:
             "-run=ImportAssetsCommandlet",
             f"-importsettings={ImportSettings.ItemJsonFile}",
         ]
-        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.run(args, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
         try:
             p.check_returncode()
             self.logger.success("Successfully imported item definitions.")
@@ -205,10 +208,11 @@ class ItemDefProcessor:
         self.import_textures()
         self.import_item_definitions()
 
-        self.logger.success(f"Finished processing items ({self.num_errors} errors)")
+        self.logger.success(
+            f"Finished processing items ({self.num_errors} errors)")
 
 
 if __name__ == "__main__":
-    items = get_item_list()
+    items = getItemList()
     item_processor = ItemDefProcessor(items)
     item_processor.process()

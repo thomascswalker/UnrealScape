@@ -37,13 +37,8 @@ class ImportSettings:
 
 class EditorPaths:
     UeEngineDir = "C:\\Program Files\\Epic Games\\UE_5.1\\Engine"
-    UeEngineExe = os.path.join(UeEngineDir, "Binaries\\Win64\\UnrealEditor.exe")
-
-
-def get_item_list() -> List[str]:
-    with open(ImportSettings.ItemList, "r") as f:
-        allowed_item_list = json.load(f)
-    return allowed_item_list
+    UeEngineExe = os.path.join(
+        UeEngineDir, "Binaries\\Win64\\UnrealEditor.exe")
 
 
 class ModelData(list):
@@ -53,16 +48,23 @@ class ModelData(list):
     ModelIds: int = 3
 
 
-def get_source_model_data() -> ModelData:
-    model_data = ModelData()
+def getItemList() -> List[str]:
+    with open(ImportSettings.ItemList, "r") as f:
+        allowed_item_list = json.load(f)
+    return allowed_item_list
+
+
+def getSourceModelData() -> ModelData:
+    data = ModelData()
     with open(ImportSettings.ModelDataFile, "r") as f:
         reader = csv.reader(f, delimiter=",", quotechar='"')
         for row in reader:
-            model_data.append(row)
-    return model_data
+            data.append(row)
+    return data
 
 
-def format_name(in_name: str) -> str:
-    chars = [c for c in in_name if c.isalpha() or c.isdigit() or c == " "]
-    basename = "".join(chars).rstrip()
-    return basename.title().replace(" ", "")
+def formatOutputName(inName: str) -> str:
+    chars = [c for c in inName if c.isalpha() or c.isdigit() or c == " "]
+    baseName = "".join(chars).rstrip()
+    outName = baseName.title().replace(" ", "")
+    return outName
