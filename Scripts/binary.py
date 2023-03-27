@@ -49,10 +49,13 @@ class BinaryReader:
         value = self._fileObj.read(size)
         return struct.unpack(self._endian.value + fmt, value)[0]
 
-    def readChar(self) -> bytes:
+    def readByte(self) -> bytes:
         return self.readValue("c", CHAR)
 
-    def readUnsignedChar(self) -> int:
+    def readSignedByte(self) -> int:
+        return self.readValue("b", CHAR)
+
+    def readUnsignedByte(self) -> int:
         return self.readValue("B", CHAR)
 
     def readShort(self) -> int:
