@@ -17,11 +17,11 @@ from const import (
 from osrsbox import items_api
 from osrsbox.items_api.all_items import AllItems, ItemProperties
 
-from logger import get_logger
+from logger import getLogger
 
 
 class ItemDefProcessor:
-    logger = get_logger(__name__, logging.INFO)
+    logger = getLogger(__name__, logging.INFO)
 
     allow_list: List[str]
     processed: List[str]
@@ -106,8 +106,7 @@ class ItemDefProcessor:
                 # Determine if we've processed this item or if it's not allowed
                 # If it doesn't pass the check, we'll skip it
                 if not self.is_allowed(item):
-                    self.logger.debug(
-                        f"Already processed or not allowed: {item.name}")
+                    self.logger.debug(f"Already processed or not allowed: {item.name}")
                     continue
 
                 # Write the texture to a file
@@ -172,8 +171,7 @@ class ItemDefProcessor:
             f"-importsettings={ImportSettings.TextureJsonFile}",
         ]
 
-        p = subprocess.run(args, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT)
+        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         try:
             p.check_returncode()
             self.logger.success("Successfully imported item definitions.")
@@ -191,8 +189,7 @@ class ItemDefProcessor:
             "-run=ImportAssetsCommandlet",
             f"-importsettings={ImportSettings.ItemJsonFile}",
         ]
-        p = subprocess.run(args, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT)
+        p = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         try:
             p.check_returncode()
             self.logger.success("Successfully imported item definitions.")
@@ -208,8 +205,7 @@ class ItemDefProcessor:
         self.import_textures()
         self.import_item_definitions()
 
-        self.logger.success(
-            f"Finished processing items ({self.num_errors} errors)")
+        self.logger.success(f"Finished processing items ({self.num_errors} errors)")
 
 
 if __name__ == "__main__":
