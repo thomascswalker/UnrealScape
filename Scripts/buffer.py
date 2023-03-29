@@ -55,8 +55,11 @@ class ByteBuffer:
     def remaining(self) -> int:
         return (len(self.data) - 1) - self.readerIndex
 
+    def getRemaining(self) -> bytearray:
+        return self.data[self.readerIndex:]
+
     def readValue(self, fmt: str, size: int) -> Any:
-        value = self.data[self.readerIndex : self.readerIndex + size]  # noqa
+        value = self.data[self.readerIndex: self.readerIndex + size]  # noqa
         self.readerIndex += size
         return struct.unpack(self.LITTLE_ENDIAN + fmt, value)[0]
 
@@ -101,12 +104,12 @@ class ByteBuffer:
         return self.readValue("f", FLOAT)
 
     def readUnsignedMedium(self) -> int:
-        value = self.data[self.readerIndex : self.readerIndex + 3]  # noqa
+        value = self.data[self.readerIndex: self.readerIndex + 3]  # noqa
         self.readerIndex += 3
         return int.from_bytes(value, "big", signed=False)
 
     def readSignedMedium(self) -> int:
-        value = self.data[self.readerIndex : self.readerIndex + 3]  # noqa
+        value = self.data[self.readerIndex: self.readerIndex + 3]  # noqa
         self.readerIndex += 3
         return int.from_bytes(value, "big", signed=True)
 
@@ -132,5 +135,5 @@ class ByteBuffer:
         """Transfers the specified `src` bytearray's data to this buffer at the
         current `writerIndex` and increases the `writerIndex` by the number
         of transferred bytes (`length`)."""
-        self.data += src[srcIndex : srcIndex + length]  # noqa
+        self.data += src[srcIndex: srcIndex + length]  # noqa
         self.writerIndex += length

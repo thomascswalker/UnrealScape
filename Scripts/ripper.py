@@ -15,26 +15,7 @@ import xtea
 logger = getLogger(__file__, logging.INFO)
 
 
-@dataclass
-class FileData:
-    id: int = 0
-    nameHash: int = 0
-
-
-@dataclass
-class ArchiveData:
-    id: int = 0
-    nameHash: int = 0
-    crc: int = 0
-    """The cyclic redendancy check code. Used to validate against corruption."""
-    version: int = 0
-    """The version of the Js5 archive."""
-    fileCount: int = 0
-    files: List[FileData] = field(default_factory=list)
-
-    def __str__(self) -> str:
-        return f"ID: {self.id}, File Count: {self.fileCount}"
-
+# https://www.rune-server.ee/runescape-development/rs-503-client-and-server/snippets/659324-model-encoder.html
 
 def getJagexCache() -> str:
     userProfile = os.environ.get("userprofile")
@@ -176,11 +157,12 @@ class DataFile:
 
     # https://github.com/runelite/runelite/blob/0358f03227d1282a58d7d50e7354a71286342087/cache/src/main/java/net/runelite/cache/fs/jagex/DataFile.java#L36
     def read(self, indexId: int, archiveId: int, sector: int, size: int) -> bytearray:
-        logger.debug("Reading data")
+        logger.info(
+            f"Reading data for {IndexType(archiveId).name}, sector {sector}, size {size}")
 
         # Create new buffers
-        readBuffer = bytearray(self.sectorSize)
-        buffer = ByteBuffer(size)
+        readBuffer = bytearray()
+        outBuffer = bytearray()
 
         readBytesCount = 0
         nextSector = 0
@@ -241,13 +223,13 @@ class DataFile:
                 )
                 currentIndex = readBuffer[7] & 0xFF
 
-            buffer.writeValue(readBuffer, 0, dataBlockSize)
+            outBuffer.extend(readBuffer)
             readBytesCount += dataBlockSize
             logger.debug(f"Read bytes count: {readBytesCount}")
             logger.debug(f"Next sector: {nextSector}")
             sector = nextSector
 
-        return buffer.data
+        return outBuffer
 
 
 class IndexFile:  # type: ignore # noqa
@@ -318,6 +300,12 @@ class Store:
         return self.indexes
 
 
+class CompressionType(IntEnum):
+    Uncompressed = 0
+    Bz2 = 1
+    Gz = 2
+
+
 class Container:
     data: bytearray = bytearray()
     compression: int = 0
@@ -340,29 +328,28 @@ class Container:
         compression = stream.readUnsignedByte()
         logger.info(f"Compression type: {compression}")
         compressedLength = stream.readInt()
+        logger.info(f"Compressed length: {compressedLength}")
         if compressedLength < 0 or compressedLength > 1000000:
             raise RuntimeError("Invalid data.")
-        crc32 = crc.Register(crc.Crc32.CRC32)
-        crc32.init()
-        crc32.update(b)
+        crc32 = crc.Calculator(crc.Crc32.CRC32, optimized=True)
 
         data = bytearray()
         revision = -1
-        if compression == 0:
-            encryptedData = stream.readBytes(compressedLength)
-            crc32.update(encryptedData)
-            decryptedData = Container.decrypt(
-                encryptedData, len(encryptedData), keys)
+        if compression == CompressionType.Uncompressed:
+            stream.readBytes(compressedLength)  # TODO: Resolve this
             if stream.remaining() >= 2:
                 revision = stream.readUnsignedShort()
+                logger.info(f"Found revision: {revision}")
                 assert revision != -1
-            data = decryptedData
+            data = stream.getRemaining()
         else:
             raise ValueError(f"Unknown compression type: {compression}")
 
         container = Container(compression, revision)
-        container.data = data
-        container.crc = crc32.digest()
+        container.data = b
+        container.crc = crc32.checksum(data)
+
+        logger.info(f"Container checksum: {container.crc}")
 
         return container
 
@@ -391,6 +378,8 @@ class DiskStorage(Storage):  # type: ignore # noqa
         for i in range(self.indexFileMaster.getIndexCount() + 1):
             if not IndexType.isValidIndex(i):
                 continue
+            if not i == IndexType.Configs:
+                continue
             store.addIndex(i)
             self.addIndexFile(i)
 
@@ -415,7 +404,8 @@ class DiskStorage(Storage):  # type: ignore # noqa
         if indexData.size() == 0:
             return
         container = Container.decompress(indexData.data)
-        print(container.data)
+        logger.info(container.data)
+        logger.info(container.data.decode())
         return
 
     def addIndexFile(self, id: int) -> None:
@@ -434,7 +424,6 @@ class DiskStorage(Storage):  # type: ignore # noqa
 
 
 if __name__ == "__main__":
-    logger.info("Running")
     cache = getJagexCache()
     store = Store(cache)
     store.load()
