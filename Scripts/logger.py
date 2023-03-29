@@ -1,7 +1,7 @@
 import logging
 import sys
 
-FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 
 SUCCESS = 25
 
@@ -47,7 +47,7 @@ class CustomLogger(logging.Logger):
             self._log(SUCCESS, msg, args, **kwargs)
 
 
-def get_logger(name: str, level: int = logging.DEBUG) -> CustomLogger:
+def getLogger(name: str, level: int = logging.DEBUG) -> CustomLogger:
 
     logging.basicConfig(level=level)
     logging.setLoggerClass(CustomLogger)
@@ -66,7 +66,7 @@ def get_logger(name: str, level: int = logging.DEBUG) -> CustomLogger:
 
 
 if __name__ == "__main__":
-    logger = get_logger(__file__, logging.DEBUG)
+    logger = getLogger(__file__, logging.DEBUG)
     logger.debug("debug message")
     logger.info("info message")
     logger.warning("warning message")
